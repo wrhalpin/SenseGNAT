@@ -20,6 +20,12 @@ An explanation of SenseGNAT's commitment to transparent, human-readable detectio
 
 ---
 
+## How explanation documents relate to the rest of the docs
+
+Explanation documents answer the question "why does it work this way?" They are best read after completing the getting-started tutorial and before diving into how-to guides for specific tasks. If you are trying to understand a design choice you encountered in the code, start here. If you are trying to accomplish a specific task, the how-to guides will be more directly useful.
+
+---
+
 ## Related reading
 
 - [ADR-001](../archtiecture/adrs/001-standalone-capability.md) — Why SenseGNAT is standalone
