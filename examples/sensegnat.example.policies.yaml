@@ -1,0 +1,35 @@
+# Policy rules seed BehaviorProfiles before telemetry is observed.
+# Destinations and ports listed here are treated as known-good baselines
+# and will not trigger rarity findings on first contact.
+#
+# Group rules apply to all members of that group.
+# Subject rules add to (not replace) group rules.
+
+groups:
+  engineering:
+    members: [alice, bob]
+    allowed_destinations:
+      - 203.0.113.10
+      - 10.0.0.1
+    allowed_ports: [22, 80, 443, 8080]
+    allowed_protocols: [tcp]
+
+  finance:
+    members: [carol]
+    allowed_destinations:
+      - 203.0.113.50
+    allowed_ports: [443]
+    allowed_protocols: [tcp]
+
+subjects:
+  alice:
+    peer_group: engineering
+    allowed_destinations:
+      - 198.51.100.44   # alice's approved external vendor
+    allowed_ports: [8443]
+
+  bob:
+    peer_group: engineering
+
+  carol:
+    peer_group: finance

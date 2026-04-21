@@ -22,6 +22,7 @@ class SenseGNATSettings(BaseModel):
     tagline: str = "Behavior is the signal."
     runtime: RuntimeSettings = Field(default_factory=RuntimeSettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
+    policy_path: Path | None = None
 
 
 def load_settings(path: Path) -> SenseGNATSettings:
