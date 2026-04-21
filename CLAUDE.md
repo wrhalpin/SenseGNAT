@@ -38,18 +38,20 @@ pytest
 
 ```
 sensegnat/
-  models/       # Frozen dataclasses — the data contracts (events, entities, findings)
-  ingestion/    # EventAdapter ABC + concrete source adapters
+  models/       # Frozen dataclasses — the data contracts (events, entities, findings, narratives)
+  ingestion/    # EventAdapter ABC + concrete source adapters (SampleEventAdapter, CsvEventAdapter)
   behavior/     # ProfileBuilder — aggregates events into BehaviorProfile objects
-  detection/    # Explainable detectors (RareDestinationDetector is the only one so far)
-  storage/      # InMemoryProfileStore / InMemoryFindingStore (disk persistence TODO)
-  connectors/   # GNATConnector — converts Finding → GNAT record dict
-  config/       # Pydantic settings models (no YAML loader yet)
+  detection/    # Explainable detectors (RareDestinationDetector, PeerDeviationDetector)
+  storage/      # InMemoryProfileStore / InMemoryFindingStore + JSON-backed equivalents
+  connectors/   # GNATConnector — converts Finding/Narrative → GNAT record dicts
+  config/       # Pydantic settings models + load_settings(path) YAML loader
+  policy/       # PolicyEngine — loads per-subject/group rules from YAML
+  narrative/    # NarrativeBuilder — rolls per-subject findings into a Narrative
   api/          # SenseGNATService — the main orchestrator
-  common/       # Reserved for shared utilities (currently empty)
+  common/       # Shared utilities: to_dict (serialization), utcnow (time)
 
 tests/          # pytest suite (project root, not inside the package)
-examples/       # Runnable scripts and config templates
+examples/       # Runnable scripts, config templates, and sample data
 docs/           # ADRs, architecture diagrams, branding
 ```
 
@@ -59,10 +61,12 @@ docs/           # ADRs, architecture diagrams, branding
 
 ```
 EventAdapter.fetch_events()
-  → ProfileBuilder.build()        # builds BehaviorProfile per subject
-  → RareDestinationDetector.detect()  # compares event to existing profile
-  → InMemoryFindingStore.add()
-  → GNATConnector.to_record()     # converts Finding to GNAT-compatible dict
+  → ProfileBuilder.build(policy_engine?)  # builds BehaviorProfile per subject, seeded by policy
+  → RareDestinationDetector.detect()      # compares event to existing profile
+  → PeerDeviationDetector.detect()        # compares event to current-batch peer profiles
+  → FindingStore.add()
+  → NarrativeBuilder.build()              # rolls findings into per-subject Narrative
+  → GNATConnector.to_record()             # converts Finding/Narrative → GNAT record dict
 ```
 
 `SenseGNATService.run_once()` (`sensegnat/api/service.py`) wires all of this together.
@@ -81,22 +85,24 @@ EventAdapter.fetch_events()
 
 ---
 
-## Phase A scope (what's wired up now)
+## What's implemented
 
-- Single adapter: `SampleEventAdapter` (hardcoded fixture event)
-- Single detector: `RareDestinationDetector` — flags destinations absent from a subject's profile
-- In-memory stores only — nothing persists across runs
-- One passing unit test in `tests/test_rarity.py`
+- Two adapters: `SampleEventAdapter` (fixture) and `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps)
+- Two detectors: `RareDestinationDetector` and `PeerDeviationDetector`
+- `PolicyEngine` — loads per-subject/group rules from YAML; seeds profiles before telemetry arrives
+- `NarrativeBuilder` — rolls per-subject findings into a `Narrative` with severity rollup and type frequency
+- YAML config loader — `load_settings(path)` in `sensegnat/config/settings.py`
+- Disk persistence — `JsonProfileStore` and `JsonFindingStore` in `sensegnat/storage/json_store.py`
+- `sensegnat.common` — `to_dict` (recursive JSON-safe serializer) and `utcnow` (timezone-aware now)
+- CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
+- 51 passing unit tests
 
-## Not yet implemented (Phase B and beyond)
+## Not yet implemented
 
-- YAML config loader — `SenseGNATSettings` models exist but nothing reads `sensegnat.example.yaml` at runtime
-- Disk persistence — `StorageSettings` has paths but `InMemoryProfileStore` ignores them
-- Additional detectors — peer deviation, time-window drift, policy rule violations (all referenced in ADRs but absent)
-- Policy engine — referenced in ADR-002 and the architecture diagram; no code yet
-- Risk narrative builder — referenced in the architecture diagram; no code yet
-- Real event adapters — Zeek, Suricata, or GNAT telemetry feeds
-- `sensegnat.common` — empty; shared utilities belong here when needed
+- Time-window drift detector — referenced in ADRs; no code yet
+- Policy rule-violation detector — referenced in ADRs; no code yet
+- Real network adapters — Zeek, Suricata, or live GNAT telemetry feeds
+- Disk store merging — `JsonProfileStore` replaces profiles on `put_many`; no incremental merge yet
 
 ---
 

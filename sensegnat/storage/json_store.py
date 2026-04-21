@@ -4,19 +4,9 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from sensegnat.common.serialization import to_dict
 from sensegnat.models.entities import BehaviorProfile
 from sensegnat.models.findings import Finding
-
-
-def _profile_to_dict(p: BehaviorProfile) -> dict:
-    return {
-        "profile_id": p.profile_id,
-        "subject_id": p.subject_id,
-        "peer_group": p.peer_group,
-        "common_destinations": sorted(p.common_destinations),
-        "common_ports": sorted(p.common_ports),
-        "common_protocols": sorted(p.common_protocols),
-    }
 
 
 def _profile_from_dict(d: dict) -> BehaviorProfile:
@@ -28,19 +18,6 @@ def _profile_from_dict(d: dict) -> BehaviorProfile:
         common_ports=frozenset(d.get("common_ports", [])),
         common_protocols=frozenset(d.get("common_protocols", [])),
     )
-
-
-def _finding_to_dict(f: Finding) -> dict:
-    return {
-        "finding_id": f.finding_id,
-        "finding_type": f.finding_type,
-        "seen_at": f.seen_at.isoformat(),
-        "subject_id": f.subject_id,
-        "severity": f.severity,
-        "score": f.score,
-        "summary": f.summary,
-        "evidence": f.evidence,
-    }
 
 
 def _finding_from_dict(d: dict) -> Finding:
@@ -70,7 +47,7 @@ class JsonProfileStore:
     def _save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._path.write_text(
-            json.dumps({k: _profile_to_dict(v) for k, v in self._profiles.items()}, indent=2)
+            json.dumps({k: to_dict(v) for k, v in self._profiles.items()}, indent=2)
         )
 
     def get(self, subject_id: str) -> BehaviorProfile | None:
@@ -94,7 +71,7 @@ class JsonFindingStore:
 
     def _save(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._path.write_text(json.dumps([_finding_to_dict(f) for f in self._findings], indent=2))
+        self._path.write_text(json.dumps([to_dict(f) for f in self._findings], indent=2))
 
     def add(self, finding: Finding) -> None:
         self._findings.append(finding)
