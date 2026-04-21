@@ -54,7 +54,9 @@ class JsonProfileStore:
         return self._profiles.get(subject_id)
 
     def put_many(self, profiles: dict[str, BehaviorProfile]) -> None:
-        self._profiles.update(profiles)
+        for subject_id, incoming in profiles.items():
+            existing = self._profiles.get(subject_id)
+            self._profiles[subject_id] = existing.merge(incoming) if existing else incoming
         self._save()
 
 
