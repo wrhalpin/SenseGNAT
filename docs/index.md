@@ -4,19 +4,21 @@ title: SenseGNAT
 description: Behavior analytics companion to GNAT. Network profiling and behavior analysis — see more, know more, stop more.
 ---
 
-<p align="center">
-  <img src="assets/images/sensegnat-logo-256.png" alt="SenseGNAT mascot — a GNAT in a deep-violet suit, fingers at its temples, signal arcs radiating from a shield badge" width="192">
-</p>
-
-# SenseGNAT
-
-Behavior analytics companion to GNAT. Builds per-entity baselines from
-normalized network telemetry, runs explainable detectors against those
-baselines, and emits STIX 2.1 findings back into GNAT via TAXII 2.1.
-
-**Behavior is the signal.**
-
-Source: [`github.com/wrhalpin/SenseGNAT`](https://github.com/wrhalpin/SenseGNAT).
+<div style="display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem;">
+  <div style="flex: 1; min-width: 0;">
+    <h1 style="margin-top: 0;">SenseGNAT</h1>
+    <p>Behavior analytics companion to GNAT. Builds per-entity baselines from
+    normalized network telemetry, runs explainable detectors against those
+    baselines, and emits STIX 2.1 findings back into GNAT via TAXII 2.1.</p>
+    <p><strong>Behavior is the signal.</strong></p>
+    <p>Source: <a href="https://github.com/wrhalpin/SenseGNAT"><code>github.com/wrhalpin/SenseGNAT</code></a>.</p>
+  </div>
+  <div style="flex-shrink: 0;">
+    <img src="assets/images/sensegnat-logo-512.png"
+         alt="SenseGNAT mascot — a GNAT in a deep-violet suit, fingers at its temples, signal arcs radiating from a shield badge"
+         width="300">
+  </div>
+</div>
 
 ---
 
