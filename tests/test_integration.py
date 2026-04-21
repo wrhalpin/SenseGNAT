@@ -75,8 +75,20 @@ def policy_engine(tmp_path: Path) -> PolicyEngine:
     return PolicyEngine.from_yaml(p)
 
 
+def _findings(records: list[dict]) -> list[dict]:
+    return [r for r in records if r.get("type") == "indicator"]
+
+
+def _narratives(records: list[dict]) -> list[dict]:
+    return [r for r in records if r.get("type") == "note"]
+
+
 def _records_by_type(records: list[dict], record_type: str) -> list[dict]:
-    return [r for r in records if r.get("record_type") == record_type]
+    # Map legacy record_type labels to STIX type field for backwards compat
+    stix_type = {"anomaly-finding": "indicator", "risk-narrative": "note"}.get(
+        record_type, record_type
+    )
+    return [r for r in records if r.get("type") == stix_type]
 
 
 # ── Basic pipeline smoke test ─────────────────────────────────────────────────
@@ -114,8 +126,8 @@ def test_rarity_finding_fires_against_existing_profile() -> None:
     records = service.run_once()
     findings = _records_by_type(records, "anomaly-finding")
     assert len(findings) == 1
-    assert findings[0]["finding_type"] == "rare-destination"
-    assert findings[0]["subject_id"] == "alice"
+    assert findings[0]["x_gnat_signature"] == "rare-destination"
+    assert findings[0]["x_sensegnat_subject_id"] == "alice"
 
 
 def test_no_rarity_finding_for_known_destination() -> None:
@@ -167,10 +179,10 @@ def test_peer_deviation_fires_when_destination_unique_to_subject(
     records = service.run_once()
     peer_findings = [
         r for r in _records_by_type(records, "anomaly-finding")
-        if r.get("finding_type") == "peer-deviation"
+        if r.get("x_gnat_signature") == "peer-deviation"
     ]
     assert len(peer_findings) == 1
-    assert peer_findings[0]["subject_id"] == "alice"
+    assert peer_findings[0]["x_sensegnat_subject_id"] == "alice"
 
 
 def test_peer_deviation_does_not_fire_when_destination_seen_by_peers(
@@ -187,7 +199,7 @@ def test_peer_deviation_does_not_fire_when_destination_seen_by_peers(
     records = service.run_once()
     peer_findings = [
         r for r in _records_by_type(records, "anomaly-finding")
-        if r.get("finding_type") == "peer-deviation"
+        if r.get("x_gnat_signature") == "peer-deviation"
     ]
     assert peer_findings == []
 
@@ -204,8 +216,8 @@ def test_narrative_emitted_when_findings_exist() -> None:
     records = service.run_once()
     narratives = _records_by_type(records, "risk-narrative")
     assert len(narratives) == 1
-    assert narratives[0]["subject_id"] == "alice"
-    assert narratives[0]["finding_count"] == 1
+    assert narratives[0]["x_sensegnat_subject_id"] == "alice"
+    assert narratives[0]["x_sensegnat_finding_count"] == 1
 
 
 def test_no_narrative_when_no_findings() -> None:
@@ -232,7 +244,7 @@ def test_separate_narratives_per_subject() -> None:
     ])
     records = service.run_once()
     narratives = _records_by_type(records, "risk-narrative")
-    subjects = {n["subject_id"] for n in narratives}
+    subjects = {n["x_sensegnat_subject_id"] for n in narratives}
     assert subjects == {"alice", "bob"}
 
 
@@ -265,7 +277,7 @@ def test_new_destination_still_rare_after_accumulation() -> None:
     service.adapter = _FixedAdapter([_event("e3", "alice", "198.51.100.99")])
     findings = _records_by_type(service.run_once(), "anomaly-finding")
     assert len(findings) == 1
-    assert findings[0]["finding_type"] == "rare-destination"
+    assert findings[0]["x_gnat_signature"] == "rare-destination"
 
 
 # ── Output record shape ───────────────────────────────────────────────────────
@@ -278,8 +290,11 @@ def test_finding_record_has_required_fields() -> None:
     service.adapter = _FixedAdapter([_event("e2", "alice", "198.51.100.99")])
     records = service.run_once()
     finding = _records_by_type(records, "anomaly-finding")[0]
-    for field in ("finding_id", "finding_type", "seen_at", "subject_id",
-                  "severity", "score", "summary", "evidence", "product", "record_type"):
+    for field in ("type", "spec_version", "id", "name", "pattern", "pattern_type",
+                  "valid_from", "indicator_types", "confidence",
+                  "x_gnat_sensor_type", "x_gnat_sensor_id", "x_gnat_signature",
+                  "x_sensegnat_finding_id", "x_sensegnat_score", "x_sensegnat_severity",
+                  "x_sensegnat_summary", "x_sensegnat_subject_id"):
         assert field in finding, f"missing field: {field}"
 
 
@@ -291,6 +306,7 @@ def test_narrative_record_has_required_fields() -> None:
     service.adapter = _FixedAdapter([_event("e2", "alice", "198.51.100.99")])
     records = service.run_once()
     narrative = _records_by_type(records, "risk-narrative")[0]
-    for field in ("subject_id", "finding_count", "finding_types",
-                  "severity", "score", "summary", "product", "record_type"):
+    for field in ("type", "spec_version", "id", "content",
+                  "x_gnat_sensor_id", "x_sensegnat_subject_id", "x_sensegnat_finding_count",
+                  "x_sensegnat_severity", "x_sensegnat_score", "x_sensegnat_finding_types"):
         assert field in narrative, f"missing field: {field}"
