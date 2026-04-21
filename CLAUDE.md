@@ -88,7 +88,7 @@ EventAdapter.fetch_events()
 ## What's implemented
 
 - Two adapters: `SampleEventAdapter` (fixture) and `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps)
-- Two detectors: `RareDestinationDetector` and `PeerDeviationDetector`
+- Four detectors: `RareDestinationDetector`, `PeerDeviationDetector`, `PolicyViolationDetector`, `TimeWindowDriftDetector`
 - `PolicyEngine` — loads per-subject/group rules from YAML; seeds profiles before telemetry arrives
 - `NarrativeBuilder` — rolls per-subject findings into a `Narrative` with severity rollup and type frequency
 - YAML config loader — `load_settings(path)` in `sensegnat/config/settings.py`
@@ -97,12 +97,9 @@ EventAdapter.fetch_events()
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
 - 51 passing unit tests
 
-## Not yet implemented
+## Not yet implemented (Phase C)
 
-- Time-window drift detector — referenced in ADRs; no code yet
-- Policy rule-violation detector — referenced in ADRs; no code yet
 - Real network adapters — Zeek, Suricata, or live GNAT telemetry feeds
-- Disk store merging — `JsonProfileStore` replaces profiles on `put_many`; no incremental merge yet
 
 ---
 
