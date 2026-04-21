@@ -368,6 +368,80 @@ Three important things to notice:
 
 ---
 
+## Step 6 — The internal data structures
+
+You have now seen the published output. Here is a brief look at the internal
+objects that flow through the pipeline.
+
+### `NormalizedNetworkEvent`
+
+This is the input to every other component. It is a frozen dataclass —
+once created, it cannot be modified. The fields that matter most for
+detection are:
+
+```python
+@dataclass(frozen=True)
+class NormalizedNetworkEvent:
+    event_id: str            # unique identifier for this log line
+    seen_at: datetime        # timezone-aware; required
+    source_host: str         # originating host
+    source_user: str | None  # user identity — used as subject ID when present
+    destination: str         # destination IP or hostname
+    destination_port: int
+    protocol: str
+    bytes_out: int = 0
+    bytes_in: int = 0
+```
+
+`source_user` drives the subject identity. When it is set, all profiles and
+findings are keyed to the user name. When it is `None`, `source_host` is
+used. In the hands-on exercise above you set `source_user="alice"`, so all
+profile and finding keys read `"alice"`.
+
+### `BehaviorProfile`
+
+The profiler builds one `BehaviorProfile` per subject per run. A profile is
+a lightweight summary of observed behaviour:
+
+```python
+@dataclass(frozen=True)
+class BehaviorProfile:
+    profile_id: str
+    subject_id: str
+    peer_group: str | None
+    common_destinations: FrozenSet[str]
+    common_ports: FrozenSet[int]
+    common_protocols: FrozenSet[str]
+```
+
+`common_destinations` is the set the `RareDestinationDetector` checks
+against. When the profile is stored, `BehaviorProfile.merge()` unions the
+new destinations into whatever was already stored, so the set only ever
+grows.
+
+### `Finding`
+
+Every detector returns either `None` or a `Finding`:
+
+```python
+@dataclass(frozen=True)
+class Finding:
+    finding_id: str       # UUID
+    finding_type: str     # "rare-destination", "peer-deviation", etc.
+    seen_at: datetime
+    subject_id: str
+    severity: str         # "low", "medium", "high", "critical"
+    score: float          # 0.0–1.0
+    summary: str          # human-readable sentence
+    evidence: dict[str, str]  # key-value context for the finding
+```
+
+`GNATConnector.to_record()` maps every field of a `Finding` directly to
+one of the STIX `x_sensegnat_*` extension properties you saw in the output.
+There is no lossy transformation — every piece of information is preserved.
+
+---
+
 ## Next steps
 
 - **Tutorial 2** — [Write a Custom Adapter](02-write-a-custom-adapter.md):
