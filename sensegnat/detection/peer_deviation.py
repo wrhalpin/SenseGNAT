@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from uuid import uuid4
 
+from sensegnat.common.time_utils import utcnow
 from sensegnat.models.entities import BehaviorProfile
 from sensegnat.models.events import NormalizedNetworkEvent
 from sensegnat.models.findings import Finding
@@ -45,7 +45,7 @@ class PeerDeviationDetector:
         return Finding(
             finding_id=str(uuid4()),
             finding_type="peer-deviation",
-            seen_at=datetime.now(timezone.utc),
+            seen_at=utcnow(),
             subject_id=profile.subject_id,
             severity="medium",
             score=0.70,
