@@ -87,7 +87,7 @@ EventAdapter.fetch_events()
 
 ## What's implemented
 
-- Three adapters: `SampleEventAdapter` (fixture), `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps), `ZeekConnLogAdapter` (Zeek conn.log TSV, dynamic #fields header)
+- Four adapters: `SampleEventAdapter` (fixture), `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps), `ZeekConnLogAdapter` (Zeek conn.log TSV, dynamic #fields header), `SuricataEveAdapter` (EVE JSON flow/alert records)
 - Four detectors: `RareDestinationDetector`, `PeerDeviationDetector`, `PolicyViolationDetector`, `TimeWindowDriftDetector`
 - `PolicyEngine` — loads per-subject/group rules from YAML; seeds profiles before telemetry arrives
 - `NarrativeBuilder` — rolls per-subject findings into a `Narrative` with severity rollup and type frequency
@@ -96,12 +96,11 @@ EventAdapter.fetch_events()
 - Profile accumulation — `BehaviorProfile.merge()` unions observation sets across runs; stores call it on `put_many`
 - `sensegnat.common` — `to_dict` (recursive JSON-safe serializer) and `utcnow` (timezone-aware now)
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
-- 126 passing tests (unit + integration)
+- 144 passing tests (unit + integration)
 
 ## Not yet implemented (Phase C)
 
 - Live GNAT telemetry adapter — direct feed from a running GNAT instance
-- Suricata EVE JSON adapter — reads `eve.json` alert/flow records
 
 ---
 
