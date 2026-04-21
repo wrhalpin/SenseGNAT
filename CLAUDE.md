@@ -2,11 +2,11 @@
 
 ## What this project is
 
-SenseGNAT is a standalone behavior analytics capability that integrates into GNAT via a connector contract. It builds per-entity behavioral baselines from normalized network telemetry, runs explainable detectors against those baselines, and emits structured findings back into GNAT.
+SenseGNAT is a standalone behavior analytics capability that integrates into GNAT via a connector contract. It builds per-entity behavioral baselines from normalized network telemetry, runs explainable detectors against those baselines, and emits structured findings back into GNAT as STIX 2.1 objects over TAXII 2.1.
 
 Tagline: "Behavior is the signal."
 
-See `docs/archtiecture/adrs/` for the five decisions that shaped the design.
+See `docs/archtiecture/adrs/` for the five decisions that shaped the design. For user-facing documentation, see `docs/` (tutorials, how-to guides, reference, explanation).
 
 ---
 
@@ -41,9 +41,9 @@ sensegnat/
   models/       # Frozen dataclasses — the data contracts (events, entities, findings, narratives)
   ingestion/    # EventAdapter ABC + concrete source adapters (SampleEventAdapter, CsvEventAdapter)
   behavior/     # ProfileBuilder — aggregates events into BehaviorProfile objects
-  detection/    # Explainable detectors (RareDestinationDetector, PeerDeviationDetector)
+  detection/    # Explainable detectors (RareDestinationDetector, PeerDeviationDetector, etc.)
   storage/      # InMemoryProfileStore / InMemoryFindingStore + JSON-backed equivalents
-  connectors/   # GNATConnector — converts Finding/Narrative → GNAT record dicts
+  connectors/   # GNATConnector — STIX 2.1 serialization + TAXII 2.1 transport
   config/       # Pydantic settings models + load_settings(path) YAML loader
   policy/       # PolicyEngine — loads per-subject/group rules from YAML
   narrative/    # NarrativeBuilder — rolls per-subject findings into a Narrative
@@ -52,7 +52,7 @@ sensegnat/
 
 tests/          # pytest suite (project root, not inside the package)
 examples/       # Runnable scripts, config templates, and sample data
-docs/           # ADRs, architecture diagrams, branding
+docs/           # Diátaxis docs: tutorials/, how-to/, reference/, explanation/, ADRs
 ```
 
 ---
@@ -64,9 +64,12 @@ EventAdapter.fetch_events()
   → ProfileBuilder.build(policy_engine?)  # builds BehaviorProfile per subject, seeded by policy
   → RareDestinationDetector.detect()      # compares event to existing profile
   → PeerDeviationDetector.detect()        # compares event to current-batch peer profiles
+  → PolicyViolationDetector.detect()      # checks event against YAML allow-lists
+  → TimeWindowDriftDetector.detect()      # detects burst of novel destinations this window
   → FindingStore.add()
   → NarrativeBuilder.build()              # rolls findings into per-subject Narrative
-  → GNATConnector.to_record()             # converts Finding/Narrative → GNAT record dict
+  → GNATConnector.push_findings()         # STIX Indicator → GNAT TAXII endpoint
+  → GNATConnector.push_narratives()       # STIX Note → GNAT TAXII endpoint
 ```
 
 `SenseGNATService.run_once()` (`sensegnat/api/service.py`) wires all of this together.
@@ -91,12 +94,16 @@ EventAdapter.fetch_events()
 - Four detectors: `RareDestinationDetector`, `PeerDeviationDetector`, `PolicyViolationDetector`, `TimeWindowDriftDetector`
 - `PolicyEngine` — loads per-subject/group rules from YAML; seeds profiles before telemetry arrives
 - `NarrativeBuilder` — rolls per-subject findings into a `Narrative` with severity rollup and type frequency
+- `GNATConnector` — fully implemented: `finding_to_stix()` → STIX 2.1 Indicator, `narrative_to_stix()` → STIX 2.1 Note, `push_findings()` / `push_narratives()` → TAXII 2.1 bundle POST; `to_record()` and `narrative_to_record()` remain as record-only aliases
+- `PushResult` dataclass — `pushed: int`, `errors: list[str]`, `ok: bool` property
+- `GNATSettings` sub-model added to `SenseGNATSettings` (`base_url`, `api_key`, `workspace`, `tlp`, `confidence`, `timeout`)
 - YAML config loader — `load_settings(path)` in `sensegnat/config/settings.py`
 - Disk persistence — `JsonProfileStore` and `JsonFindingStore` in `sensegnat/storage/json_store.py`
 - Profile accumulation — `BehaviorProfile.merge()` unions observation sets across runs; stores call it on `put_many`
 - `sensegnat.common` — `to_dict` (recursive JSON-safe serializer) and `utcnow` (timezone-aware now)
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
-- 144 passing tests (unit + integration)
+- 189 passing tests (unit + integration), including `tests/test_gnat_connector.py` (45 tests)
+- Diátaxis documentation structure — `docs/tutorials/`, `docs/how-to/`, `docs/reference/`, `docs/explanation/`
 
 ## Not yet implemented (Phase C)
 
