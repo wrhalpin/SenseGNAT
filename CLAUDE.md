@@ -87,22 +87,21 @@ EventAdapter.fetch_events()
 
 ## What's implemented
 
-- Two adapters: `SampleEventAdapter` (fixture) and `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps)
-- Two detectors: `RareDestinationDetector` and `PeerDeviationDetector`
+- Three adapters: `SampleEventAdapter` (fixture), `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps), `ZeekConnLogAdapter` (Zeek conn.log TSV, dynamic #fields header)
+- Four detectors: `RareDestinationDetector`, `PeerDeviationDetector`, `PolicyViolationDetector`, `TimeWindowDriftDetector`
 - `PolicyEngine` — loads per-subject/group rules from YAML; seeds profiles before telemetry arrives
 - `NarrativeBuilder` — rolls per-subject findings into a `Narrative` with severity rollup and type frequency
 - YAML config loader — `load_settings(path)` in `sensegnat/config/settings.py`
 - Disk persistence — `JsonProfileStore` and `JsonFindingStore` in `sensegnat/storage/json_store.py`
+- Profile accumulation — `BehaviorProfile.merge()` unions observation sets across runs; stores call it on `put_many`
 - `sensegnat.common` — `to_dict` (recursive JSON-safe serializer) and `utcnow` (timezone-aware now)
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
-- 51 passing unit tests
+- 126 passing tests (unit + integration)
 
-## Not yet implemented
+## Not yet implemented (Phase C)
 
-- Time-window drift detector — referenced in ADRs; no code yet
-- Policy rule-violation detector — referenced in ADRs; no code yet
-- Real network adapters — Zeek, Suricata, or live GNAT telemetry feeds
-- Disk store merging — `JsonProfileStore` replaces profiles on `put_many`; no incremental merge yet
+- Live GNAT telemetry adapter — direct feed from a running GNAT instance
+- Suricata EVE JSON adapter — reads `eve.json` alert/flow records
 
 ---
 
