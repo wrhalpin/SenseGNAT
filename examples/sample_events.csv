@@ -1,0 +1,7 @@
+event_id,seen_at,source_host,source_user,destination,destination_port,protocol,bytes_out,bytes_in
+evt-001,2024-01-15T10:00:00,host-1,alice,203.0.113.10,443,tcp,1024,512
+evt-002,2024-01-15T10:01:00,host-2,bob,203.0.113.10,443,tcp,2048,1024
+evt-003,2024-01-15T10:02:00,host-1,alice,198.51.100.99,8080,tcp,512,256
+evt-004,2024-01-15T10:03:00,host-3,carol,203.0.113.50,443,tcp,4096,2048
+evt-005,2024-01-15T10:04:00,host-2,bob,10.0.0.1,22,tcp,256,128
+evt-006,2024-01-15T10:05:00,host-4,,192.0.2.77,53,udp,64,128
