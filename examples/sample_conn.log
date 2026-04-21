@@ -1,0 +1,16 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#open	2024-01-15-10-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+1705312800.000000	CxAABB1	192.168.1.10	54321	203.0.113.10	443	tcp	ssl	1.234567	1024	512	SF	T	F	0	ShADadFf	10	1384	8	832	(empty)
+1705312860.000000	CxAABB2	192.168.1.11	61234	203.0.113.10	443	tcp	ssl	0.987654	2048	1024	SF	T	F	0	ShADadFf	18	2408	14	1384	(empty)
+1705312920.000000	CxAABB3	192.168.1.10	54400	198.51.100.99	8080	tcp	-	0.512345	512	256	SF	T	F	0	ShADadFf	5	672	4	416	(empty)
+1705312980.000000	CxAABB4	192.168.1.12	49152	203.0.113.50	443	tcp	ssl	2.001234	4096	2048	SF	T	F	0	ShADadFf	30	4456	22	2488	(empty)
+1705313040.000000	CxAABB5	192.168.1.11	62000	10.0.0.1	22	tcp	ssh	30.123456	65536	32768	SF	T	T	0	ShADadFf	120	67936	98	34168	(empty)
+1705313100.000000	CxAABB6	192.168.1.13	55000	192.0.2.77	53	udp	dns	0.003456	64	128	SF	T	F	0	Dd	1	92	1	156	(empty)
+1705313160.000000	CxAABB7	192.168.1.10	54500	-	-	tcp	-	-	-	-	S0	T	F	0	S	3	180	0	0	(empty)
+#close	2024-01-15-10-06-00

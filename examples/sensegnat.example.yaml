@@ -7,3 +7,4 @@ runtime:
 storage:
   profile_store_path: ./var/profiles.json
   finding_store_path: ./var/findings.json
+policy_path: ./examples/sensegnat.example.policies.yaml
