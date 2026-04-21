@@ -1,0 +1,31 @@
+scaffold/
+├── README.md
+├── pyproject.toml
+├── examples/
+│   └── run_phase_a.py
+├── scripts/
+│   └── tree.txt
+├── src/
+│   └── sensegnat/
+│       ├── api/
+│       │   └── service.py
+│       ├── behavior/
+│       │   └── profiler.py
+│       ├── common/
+│       ├── config/
+│       │   └── settings.py
+│       ├── connectors/
+│       │   └── gnat_connector.py
+│       ├── detection/
+│       │   └── rarity.py
+│       ├── ingestion/
+│       │   ├── base.py
+│       │   └── sample_adapter.py
+│       ├── models/
+│       │   ├── entities.py
+│       │   ├── events.py
+│       │   └── findings.py
+│       └── storage/
+│           └── memory.py
+└── tests/
+    └── test_rarity.py

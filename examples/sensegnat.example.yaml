@@ -1,0 +1,9 @@
+product_name: SenseGNAT
+tagline: Behavior is the signal.
+runtime:
+  environment: dev
+  lookback_hours: 24
+  profile_window_days: 14
+storage:
+  profile_store_path: ./var/profiles.json
+  finding_store_path: ./var/findings.json

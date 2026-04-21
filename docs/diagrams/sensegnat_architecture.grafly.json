@@ -1,0 +1,139 @@
+{
+  "id": "sensegnat_architecture",
+  "name": "SenseGNAT Architecture",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "nodes": [
+    {
+      "id": "n1",
+      "type": "rect",
+      "x": 60,
+      "y": 80,
+      "width": 220,
+      "height": 70,
+      "text": "Network + Identity Telemetry"
+    },
+    {
+      "id": "n2",
+      "type": "rect",
+      "x": 340,
+      "y": 80,
+      "width": 180,
+      "height": 70,
+      "text": "Normalization"
+    },
+    {
+      "id": "n3",
+      "type": "rect",
+      "x": 580,
+      "y": 40,
+      "width": 180,
+      "height": 70,
+      "text": "Entity Resolution"
+    },
+    {
+      "id": "n4",
+      "type": "rect",
+      "x": 580,
+      "y": 140,
+      "width": 180,
+      "height": 70,
+      "text": "Policy Engine"
+    },
+    {
+      "id": "n5",
+      "type": "rect",
+      "x": 830,
+      "y": 40,
+      "width": 190,
+      "height": 70,
+      "text": "Behavior Profile Store"
+    },
+    {
+      "id": "n6",
+      "type": "rect",
+      "x": 830,
+      "y": 140,
+      "width": 220,
+      "height": 70,
+      "text": "Anomaly + Detection Engine"
+    },
+    {
+      "id": "n7",
+      "type": "rect",
+      "x": 1100,
+      "y": 140,
+      "width": 210,
+      "height": 70,
+      "text": "Risk Narrative Builder"
+    },
+    {
+      "id": "n8",
+      "type": "rect",
+      "x": 1100,
+      "y": 40,
+      "width": 180,
+      "height": 70,
+      "text": "GNAT Connector"
+    },
+    {
+      "id": "n9",
+      "type": "rect",
+      "x": 1350,
+      "y": 80,
+      "width": 220,
+      "height": 70,
+      "text": "GNAT Reports / Hunts / Workflows"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "n1",
+      "target": "n2"
+    },
+    {
+      "id": "e2",
+      "source": "n2",
+      "target": "n3"
+    },
+    {
+      "id": "e3",
+      "source": "n3",
+      "target": "n5"
+    },
+    {
+      "id": "e4",
+      "source": "n3",
+      "target": "n6"
+    },
+    {
+      "id": "e5",
+      "source": "n4",
+      "target": "n6"
+    },
+    {
+      "id": "e6",
+      "source": "n6",
+      "target": "n7"
+    },
+    {
+      "id": "e7",
+      "source": "n6",
+      "target": "n8"
+    },
+    {
+      "id": "e8",
+      "source": "n7",
+      "target": "n8"
+    },
+    {
+      "id": "e9",
+      "source": "n8",
+      "target": "n9"
+    }
+  ]
+}
