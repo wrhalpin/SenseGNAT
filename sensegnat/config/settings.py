@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+
+import yaml
 from pydantic import BaseModel, Field
 
 
@@ -20,3 +22,8 @@ class SenseGNATSettings(BaseModel):
     tagline: str = "Behavior is the signal."
     runtime: RuntimeSettings = Field(default_factory=RuntimeSettings)
     storage: StorageSettings = Field(default_factory=StorageSettings)
+
+
+def load_settings(path: Path) -> SenseGNATSettings:
+    raw = yaml.safe_load(path.read_text())
+    return SenseGNATSettings.model_validate(raw)
