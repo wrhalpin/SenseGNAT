@@ -1,0 +1,120 @@
+---
+---
+
+@import "jekyll-theme-cayman";
+
+// ─── SenseGNAT brand palette ────────────────────────────────────────────────
+//
+//  Deep Violet   #5B2DA8   primary brand colour
+//  Signal Purple #7E57FF   accent / gradient end
+//  Dark Ink      #111321   darkest — header gradient start
+//  Graphite      #2B2F3C   code blocks, secondary text
+//  Mist          #ECEAF8   table stripes, light highlights
+//  Cloud         #F6F5FB   page background
+//  Signal Cyan   #67D7F7   accent (used sparingly)
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Header — replace Cayman's green gradient with the violet-to-purple range
+.page-header {
+  background-color: #5B2DA8;
+  background-image: linear-gradient(135deg, #111321 0%, #5B2DA8 55%, #7E57FF 100%);
+}
+
+// Project name in the header
+.project-name {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+// Project tagline in the header — nudge brightness up so it reads against dark bg
+.project-tagline {
+  opacity: 0.88;
+}
+
+// Header CTA buttons
+.btn {
+  background-color: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.60);
+  }
+}
+
+// Main content links
+.main-content {
+  a {
+    color: #5B2DA8;
+
+    &:hover {
+      color: #7E57FF;
+      text-decoration: underline;
+    }
+  }
+
+  // Headings — dark ink, slightly purple
+  h1, h2, h3, h4, h5, h6 {
+    color: #111321;
+  }
+
+  // Horizontal rule matches heading colour
+  hr {
+    border-color: #ECEAF8;
+  }
+
+  // Inline code — graphite background so it pops without being garish
+  code {
+    background-color: #ECEAF8;
+    color: #2B2F3C;
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+  }
+
+  // Fenced code blocks
+  pre {
+    background-color: #2B2F3C;
+    border-radius: 6px;
+
+    code {
+      background-color: transparent;
+      color: #F6F5FB;
+      padding: 0;
+    }
+  }
+
+  // Tables — mist stripe on odd rows
+  table {
+    th {
+      background-color: #5B2DA8;
+      color: #fff;
+    }
+
+    tr:nth-child(odd) td {
+      background-color: #ECEAF8;
+    }
+  }
+
+  // Blockquotes — left accent bar in signal purple
+  blockquote {
+    border-left: 4px solid #7E57FF;
+    color: #2B2F3C;
+    padding-left: 1rem;
+  }
+}
+
+// Footer
+.site-footer {
+  border-top: 1px solid #ECEAF8;
+
+  .site-footer-owner a,
+  .site-footer-credits a {
+    color: #5B2DA8;
+
+    &:hover {
+      color: #7E57FF;
+    }
+  }
+}

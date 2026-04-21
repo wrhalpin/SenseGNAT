@@ -1,0 +1,26 @@
+title: SenseGNAT
+description: >-
+  Behavior analytics companion to GNAT. Builds per-entity baselines from
+  normalized network telemetry, runs explainable detectors, and emits STIX 2.1
+  findings via TAXII 2.1. Organised with the Diátaxis framework.
+
+theme: jekyll-theme-cayman
+
+show_downloads: false
+github:
+  repository_url: https://github.com/wrhalpin/SenseGNAT
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+include:
+  - assets
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
