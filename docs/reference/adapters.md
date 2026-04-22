@@ -297,4 +297,72 @@ Invalid lines are skipped silently (no exception is raised to the caller).
 ### Notes
 
 - `flow` bytes fields are read from the nested `flow` object, not the top-level record. Alert records without a `flow` key produce `bytes_out=0`, `bytes_in=0`.
+
+---
+
+## GNATTelemetryAdapter
+
+**Module:** `sensegnat/ingestion/gnat_telemetry_adapter.py`
+
+Consumes live sensor telemetry from the Kafka topic shared with GNAT. Taps the same raw event stream that GNAT's `KafkaSourceReader` consumes, giving SenseGNAT access to the full network five-tuple before GNAT converts records to STIX.
+
+**Requires:** `kafka-python-ng` (optional runtime dependency — `pip install kafka-python-ng`).
+
+### Constructor
+
+```python
+GNATTelemetryAdapter(
+    topic: str = "gnat.telemetry",
+    brokers: list[str] | None = None,   # default: ["localhost:9092"]
+    group_id: str = "sensegnat",
+    max_messages: int | None = None,
+    poll_timeout_ms: int = 5_000,
+    sensor_types: frozenset[str] | None = None,
+)
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `topic` | `"gnat.telemetry"` | Kafka topic name |
+| `brokers` | `["localhost:9092"]` | Broker address list |
+| `group_id` | `"sensegnat"` | Consumer group for offset tracking |
+| `max_messages` | `None` | Stop after N events; `None` drains until timeout |
+| `poll_timeout_ms` | `5000` | Milliseconds to wait before declaring topic exhausted |
+| `sensor_types` | `{"netflow", "ids_alert", "honeypot"}` | Accepted sensor_type values |
+
+### Accepted sensor types
+
+| `sensor_type` | Accepted | Reason |
+|---|---|---|
+| `netflow` | Yes | Full five-tuple available |
+| `ids_alert` | Yes | Full five-tuple available |
+| `honeypot` | Yes | Full five-tuple available |
+| `dns_log` | No | No destination IP for profiling |
+| `generic` | No | Fields not guaranteed |
+
+### Field mapping
+
+| Kafka field(s) | NormalizedNetworkEvent field | Notes |
+|---|---|---|
+| `src_ip` / `IPV4_SRC_ADDR` | `source_host` | NetFlow v9 name accepted |
+| `dst_ip` / `IPV4_DST_ADDR` | `destination` | NetFlow v9 name accepted |
+| `dst_port` / `L4_DST_PORT` / `dest_port` | `destination_port` | `0` when absent |
+| `protocol` | `protocol` | Lowercased |
+| `timestamp` / `_kafka_timestamp` | `seen_at` | ISO 8601 or epoch (ms or s) |
+| `bytes_out` / `IN_BYTES` / `orig_bytes` | `bytes_out` | `0` when absent |
+| `bytes_in` / `OUT_BYTES` / `resp_bytes` | `bytes_in` | `0` when absent |
+| `tags[0]` | `source_user` | `None` when `tags` absent or empty |
+| `flow_id` / `uid` / generated UUID | `event_id` | |
+
+### Skip conditions
+
+A record is silently skipped when:
+
+- `sensor_type` is not in the accepted set.
+- `src_ip` or `dst_ip` is absent or empty.
+
+### Notes
+
+- The consumer is always closed in a `finally` block, even when `max_messages` fires early.
+- Epoch millisecond timestamps (Kafka's native format) are detected by value `> 1e10` and divided by 1 000 to produce seconds before conversion.
 - `dest_port` is absent on some `alert` records that do not carry a full 5-tuple; such records are skipped.
