@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo/readme-banner.png" alt="SenseGNAT" width="800">
+</p>
+
 # SenseGNAT — Behavior is the signal.
 
 SenseGNAT is a behavioral analytics companion to GNAT, the threat intelligence platform. It builds per-entity behavioral baselines from normalized network telemetry, runs explainable detectors against those baselines, and emits STIX 2.1 findings into GNAT via TAXII 2.1. Every finding includes a human-readable summary and a structured evidence dict — no opaque scores, no black boxes.
