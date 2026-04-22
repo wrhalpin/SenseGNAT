@@ -102,12 +102,10 @@ EventAdapter.fetch_events()
 - Profile accumulation — `BehaviorProfile.merge()` unions observation sets across runs; stores call it on `put_many`
 - `sensegnat.common` — `to_dict` (recursive JSON-safe serializer) and `utcnow` (timezone-aware now)
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
-- 189 passing tests (unit + integration), including `tests/test_gnat_connector.py` (45 tests)
+- `GNATTelemetryAdapter` — reads live sensor records from the Kafka topic shared with GNAT; handles `netflow`, `ids_alert`, `honeypot` sensor types; supports NetFlow v9 field names; optional `kafka-python-ng` dependency (`pip install kafka-python-ng`)
+- 231 passing tests (unit + integration), including `tests/test_gnat_connector.py` (45 tests), `tests/test_gnat_telemetry_adapter.py` (42 tests)
 - Diátaxis documentation structure — `docs/tutorials/`, `docs/how-to/`, `docs/reference/`, `docs/explanation/`
-
-## Not yet implemented (Phase C)
-
-- Live GNAT telemetry adapter — direct feed from a running GNAT instance
+- GitHub Pages site — `docs/_config.yml`, `docs/index.md`, brand palette CSS override, full logo kit in `docs/assets/images/`
 
 ---
 
