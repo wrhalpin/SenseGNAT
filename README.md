@@ -10,12 +10,12 @@ SenseGNAT is a behavioral analytics companion to GNAT, the threat intelligence p
 
 ## Key capabilities
 
-- **4 source adapters** — Zeek conn.log, Suricata EVE JSON, named-column CSV, and a built-in sample fixture
+- **5 source adapters** — Zeek conn.log, Suricata EVE JSON, named-column CSV, a live Kafka/GNAT telemetry feed, and a built-in sample fixture
 - **4 explainable detectors** — rare destination, peer deviation, policy violation, and time-window drift
 - **Policy-guided baselining** — YAML rules seed profiles before telemetry arrives, solving the cold-start problem
 - **STIX 2.1 output via TAXII 2.1** — findings become `indicator` objects; narratives become `note` objects in GNAT
 - **JSON-backed profile persistence** — baselines accumulate across runs via `BehaviorProfile.merge()`
-- **189 passing tests** — unit and integration coverage across all adapters, detectors, and stores
+- **231 passing tests** — unit and integration coverage across all adapters, detectors, and stores
 
 ---
 
@@ -79,6 +79,7 @@ Full data flow and design rationale: [docs/explanation/architecture.md](docs/exp
 | `CsvEventAdapter` | Named-column CSV with ISO 8601 or Unix-epoch timestamps |
 | `ZeekConnLogAdapter` | Zeek `conn.log` TSV with dynamic `#fields` header |
 | `SuricataEveAdapter` | Suricata EVE JSON `flow` and `alert` records |
+| `GNATTelemetryAdapter` | Live sensor telemetry from GNAT's Kafka topic (`gnat.telemetry`) |
 
 ### Detectors
 

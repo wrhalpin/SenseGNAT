@@ -25,12 +25,13 @@ def fetch_events(self) -> Iterable[NormalizedNetworkEvent]:
 
 The resulting `NormalizedNetworkEvent` objects are the only currency the rest of the system accepts. Nothing downstream knows or cares whether the events came from a Zeek conn.log, a Suricata EVE JSON file, a CSV export, or a synthetic fixture. This is the normalization contract.
 
-Four adapters ship with SenseGNAT:
+Five adapters ship with SenseGNAT:
 
 - `SampleEventAdapter` — a fixture adapter that generates synthetic events for testing and examples
 - `CsvEventAdapter` — parses named-column CSV files with ISO 8601 or Unix-epoch timestamps
 - `ZeekConnLogAdapter` — parses Zeek `conn.log` TSV files using the dynamic `#fields` header
 - `SuricataEveAdapter` — parses Suricata EVE JSON `flow` and `alert` records
+- `GNATTelemetryAdapter` — consumes live sensor records from the Kafka topic shared with GNAT (`gnat.telemetry`), handling `netflow`, `ids_alert`, and `honeypot` sensor types with full NetFlow v9 field name support
 
 Writing a new adapter means subclassing `EventAdapter`, implementing `fetch_events()`, and wiring it into `SenseGNATService`. The core pipeline requires no changes.
 
@@ -176,6 +177,10 @@ ADR-005 documents the decision to maintain custom behavior objects alongside STI
 
 ---
 
-## What Is Not Yet Implemented
+## The Bidirectional GNAT Loop
 
-The output layer currently produces correct STIX 2.1 bundles and POSTs them via TAXII 2.1, but the corresponding ingestion adapter — one that reads live telemetry *from* a running GNAT instance — is not yet built. That adapter (planned for Phase C) would close the loop: SenseGNAT would consume GNAT threat intel feeds as context for its detectors, and GNAT would consume SenseGNAT behavioral findings as enrichment for its investigations.
+SenseGNAT operates as a bidirectional partner to GNAT. The output layer (`GNATConnector`) produces STIX 2.1 bundles and POSTs them to the GNAT TAXII 2.1 collection endpoint — findings flow *into* GNAT as first-class `indicator` and `note` objects.
+
+`GNATTelemetryAdapter` closes the other half of the loop. It taps the same raw Kafka topic that GNAT's `KafkaSourceReader` consumes (`gnat.telemetry`), giving SenseGNAT access to the full network five-tuple before GNAT converts records to STIX Indicators. This design choice was deliberate: reading from GNAT's TAXII endpoint would only yield processed `indicator` objects — single IPs with no port, bytes, or peer context — and that is not enough data to build behavioral profiles. The Kafka stream carries the full `SensorEvent` payload that profiling requires.
+
+The result is a complete closed loop: GNAT sensors publish telemetry to Kafka → `GNATTelemetryAdapter` reads it and normalizes it → SenseGNAT builds profiles and detects anomalies → `GNATConnector` pushes behavioral findings back into GNAT investigations. Each system does what it does best: GNAT manages intelligence and workflows; SenseGNAT manages behavioral baselines and anomaly detection.
