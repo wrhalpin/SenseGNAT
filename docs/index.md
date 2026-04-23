@@ -4,6 +4,8 @@ title: SenseGNAT
 description: Behavior analytics companion to GNAT. Network profiling and behavior analysis — see more, know more, stop more.
 ---
 
+<p class="kicker">GNAT-o-sphere / behavior analytics</p>
+
 <div style="display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem;">
   <div style="flex: 1; min-width: 0;">
     <h1 style="margin-top: 0;">SenseGNAT</h1>
@@ -125,5 +127,36 @@ are shipped. Profile accumulation, policy-guided baselining, and narrative
 building are complete. SenseGNAT now operates as a bidirectional partner
 to GNAT: consuming raw sensor telemetry from GNAT's Kafka topic and publishing
 behavioral findings back into GNAT via TAXII 2.1.
+
+---
+
+## The GNAT-o-sphere
+
+SenseGNAT is one part of a family of standalone capabilities that extend GNAT without modifying it.
+
+<div class="gnatophere-grid">
+
+  <div class="gnat-card gnat-card-gnat">
+    <span class="gnat-card-tag">Core Platform</span>
+    <h3>GNAT</h3>
+    <p>The hub platform for threat intelligence. Connector abstraction, STIX 2.1 modeling, reports, investigations, and workflow automation.</p>
+    <a class="gnat-card-link gnat-link-gnat" href="https://wrhalpin.github.io/GNAT/">Learn more</a>
+  </div>
+
+  <div class="gnat-card gnat-card-sand">
+    <span class="gnat-card-tag">Addon</span>
+    <h3>SandGNAT</h3>
+    <p>Automated malware sandbox analysis — detonate binaries in isolated VMs, capture behavioral artifacts, emit STIX 2.1 objects.</p>
+    <a class="gnat-card-link gnat-link-sand" href="https://wrhalpin.github.io/SandGNAT/">Learn more</a>
+  </div>
+
+  <div class="gnat-card gnat-card-red">
+    <span class="gnat-card-tag">Addon</span>
+    <h3>RedGNAT</h3>
+    <p>Continuous automated red teaming — ingest threat intel, construct adversary emulation scenarios, execute with safety controls.</p>
+    <a class="gnat-card-link gnat-link-red" href="https://wrhalpin.github.io/RedGNAT/">Learn more</a>
+  </div>
+
+</div>
 
 Licensed under [Apache 2.0](https://github.com/wrhalpin/SenseGNAT/blob/main/LICENSE).

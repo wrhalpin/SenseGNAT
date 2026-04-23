@@ -105,6 +105,91 @@
   }
 }
 
+// ─── Kicker — small uppercase label above the hero heading ──────────────────
+.kicker {
+  font-size: .88rem;
+  color: #8b87b0;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: 0;
+  margin-bottom: .75rem;
+}
+
+// ─── GNAT-o-sphere product cards ─────────────────────────────────────────────
+.gnatophere-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.gnat-card {
+  border: 2px solid #ECEAF8;
+  border-radius: 12px;
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(91, 45, 168, 0.06);
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 18px rgba(91, 45, 168, 0.13);
+  }
+
+  h3 {
+    margin-top: .4rem;
+    margin-bottom: .5rem;
+    font-size: 1.1rem;
+  }
+
+  p {
+    flex: 1;
+    font-size: .95rem;
+    color: #444;
+    margin-bottom: 0;
+  }
+}
+
+.gnat-card-tag {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #888;
+  display: block;
+  margin-bottom: 0;
+}
+
+.gnat-card-link {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: .4rem 1.1rem;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #fff !important;
+  align-self: flex-start;
+
+  &:hover {
+    opacity: .85;
+    text-decoration: none !important;
+  }
+}
+
+// GNAT — threat-red
+.gnat-card-gnat { border-color: #C41E2A; h3 { color: #C41E2A; } }
+.gnat-link-gnat { background: #C41E2A; }
+
+// SandGNAT — amber
+.gnat-card-sand { border-color: #D4A017; h3 { color: #D4A017; } }
+.gnat-link-sand { background: #D4A017; }
+
+// RedGNAT — crimson
+.gnat-card-red  { border-color: #C0392B; h3 { color: #C0392B; } }
+.gnat-link-red  { background: #C0392B; }
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
 // Footer
 .site-footer {
   border-top: 1px solid #ECEAF8;
