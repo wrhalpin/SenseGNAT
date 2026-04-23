@@ -133,8 +133,10 @@ behavioral findings back into GNAT via TAXII 2.1.
 
 ## The GNAT-o-sphere
 
-SenseGNAT is one part of a family of standalone capabilities that extend GNAT without modifying it.
-
+SenseGNAT is one of three add-ons that plug into GNAT, the core threat-intel platform. Every sibling emits STIX 2.1 objects and is pulled by GNAT through a documented connector rather than writing into its database directly.
+<p>
+<a class=“flow-doc-link” href=“workflow.html”>Canonical workflow documentation →</a>
+</p>
 <div class="gnatophere-grid">
 
   <div class="gnat-card gnat-card-gnat">
