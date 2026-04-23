@@ -8,6 +8,7 @@ kicker: "GNAT-o-sphere / behavior analytics"
 
 <div style="display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem;">
   <div style="flex: 1; min-width: 0;">
+    <p class="kicker">GNAT-o-sphere / core platform</p>
     <h1 style="margin-top: 0;">SenseGNAT</h1>
     <p>Behavior analytics companion to GNAT. Builds per-entity baselines from
     normalized network telemetry, runs explainable detectors against those
@@ -132,7 +133,9 @@ behavioral findings back into GNAT via TAXII 2.1.
 
 ## The GNAT-o-sphere
 
-SenseGNAT is one part of a family of standalone capabilities that extend GNAT without modifying it.
+SenseGNAT is one of three add-ons that plug into GNAT, the core threat-intel platform. Every sibling emits STIX 2.1 objects and is pulled by GNAT through a documented connector rather than writing into its database directly.
+
+[Canonical workflow documentation →](https://wrhalpin.github.io/gnat-o-sphere/workflow.html)
 
 <div class="gnatophere-grid">
 
