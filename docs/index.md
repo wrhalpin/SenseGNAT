@@ -2,9 +2,9 @@
 layout: default
 title: SenseGNAT
 description: Behavior analytics companion to GNAT. Network profiling and behavior analysis — see more, know more, stop more.
+show_kicker: true
+kicker: "GNAT-o-sphere / behavior analytics"
 ---
-
-<p class="kicker">GNAT-o-sphere / behavior analytics</p>
 
 <div style="display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem;">
   <div style="flex: 1; min-width: 0;">

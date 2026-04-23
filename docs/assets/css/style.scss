@@ -105,14 +105,14 @@
   }
 }
 
-// ─── Kicker — small uppercase label above the hero heading ──────────────────
+// ─── Kicker — small uppercase label rendered inside .page-header ─────────────
 .kicker {
   font-size: .88rem;
-  color: #8b87b0;
+  color: rgba(255, 255, 255, 0.62);
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .09em;
   margin-top: 0;
-  margin-bottom: .75rem;
+  margin-bottom: .6rem;
 }
 
 // ─── GNAT-o-sphere product cards ─────────────────────────────────────────────
