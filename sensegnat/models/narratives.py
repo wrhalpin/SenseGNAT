@@ -11,3 +11,5 @@ class Narrative:
     severity: str                   # highest severity rolled up across all findings
     score: float                    # peak score across all findings
     summary: str
+    investigation_id: str | None = None
+    investigation_link_type: str | None = None

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from uuid import uuid4
@@ -54,6 +56,10 @@ class GNATConnector:
         STIX confidence score 0-100 (default: 75).
     timeout : int
         HTTP request timeout in seconds (default: 30).
+    investigation_lookup_timeout_s : float
+        Per-call timeout for subject investigation lookups (default: 2.0).
+    investigation_lookup_cache_ttl_s : int
+        TTL in seconds for the subject→investigations cache (default: 60).
     """
 
     def __init__(
@@ -64,6 +70,8 @@ class GNATConnector:
         tlp: str = "white",
         confidence: int = 75,
         timeout: int = 30,
+        investigation_lookup_timeout_s: float = 2.0,
+        investigation_lookup_cache_ttl_s: int = 60,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
@@ -71,6 +79,10 @@ class GNATConnector:
         self._tlp = tlp
         self._confidence = confidence
         self._timeout = timeout
+        self._lookup_timeout = investigation_lookup_timeout_s
+        self._lookup_cache_ttl = investigation_lookup_cache_ttl_s
+        # cache: subject_ref → (investigation_ids, monotonic_expiry)
+        self._lookup_cache: dict[str, tuple[list[str], float]] = {}
 
     # ------------------------------------------------------------------
     # STIX serialization
@@ -85,7 +97,7 @@ class GNATConnector:
             if dst
             else f"[x-sensegnat-subject:id = '{finding.subject_id}']"
         )
-        return {
+        indicator: dict = {
             "type": "indicator",
             "spec_version": "2.1",
             "id": f"indicator--{uuid4()}",
@@ -111,11 +123,16 @@ class GNATConnector:
             "x_sensegnat_evidence": finding.evidence,
             "x_sensegnat_subject_id": finding.subject_id,
         }
+        if finding.investigation_id:
+            indicator["x_gnat_investigation_id"] = finding.investigation_id
+            indicator["x_gnat_investigation_origin"] = "sensegnat"
+            indicator["x_gnat_investigation_link_type"] = finding.investigation_link_type or "inferred"
+        return indicator
 
     def narrative_to_stix(self, narrative: Narrative) -> dict:
         """Convert a Narrative to a STIX 2.1 Note dict."""
         now = utcnow().isoformat()
-        return {
+        note: dict = {
             "type": "note",
             "spec_version": "2.1",
             "id": f"note--{uuid4()}",
@@ -131,6 +148,77 @@ class GNATConnector:
             "x_sensegnat_score": narrative.score,
             "x_sensegnat_finding_types": list(narrative.finding_types),
         }
+        if narrative.investigation_id:
+            note["x_gnat_investigation_id"] = narrative.investigation_id
+            note["x_gnat_investigation_origin"] = "sensegnat"
+            note["x_gnat_investigation_link_type"] = narrative.investigation_link_type or "inferred"
+        return note
+
+    def make_grouping(
+        self,
+        investigation_id: str,
+        object_refs: list[str],
+        run_id: str,
+    ) -> dict:
+        """Build a STIX Grouping wrapping all objects for one investigation in a run."""
+        now = utcnow().isoformat()
+        return {
+            "type": "grouping",
+            "spec_version": "2.1",
+            "id": f"grouping--{uuid4()}",
+            "created": now,
+            "modified": now,
+            "name": f"SenseGNAT findings {run_id}",
+            "context": "suspicious-activity",
+            "object_refs": object_refs,
+            "x_gnat_investigation_id": investigation_id,
+            "x_gnat_investigation_origin": "sensegnat",
+        }
+
+    # ------------------------------------------------------------------
+    # Subject investigation lookup (Path B)
+    # ------------------------------------------------------------------
+
+    def find_investigations_for_subject(
+        self,
+        subject_ref: str,
+        timeout_seconds: float | None = None,
+    ) -> list[str]:
+        """Return investigation IDs whose evidence graph contains subject_ref.
+
+        Calls GNAT's GET /api/investigations?subject=<ref> endpoint. Returns
+        an empty list on timeout, network error, or missing credentials —
+        never raises. Results are cached for lookup_cache_ttl_s seconds to
+        avoid hammering GNAT during detection bursts.
+        """
+        now = time.monotonic()
+        cached = self._lookup_cache.get(subject_ref)
+        if cached is not None:
+            ids, expiry = cached
+            if now < expiry:
+                return ids
+
+        if not self._base_url or not self._api_key:
+            return []
+
+        timeout = timeout_seconds if timeout_seconds is not None else self._lookup_timeout
+        url = (
+            f"{self._base_url}/api/investigations"
+            f"?subject={urllib.parse.quote(subject_ref, safe='')}"
+        )
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {self._api_key}"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read())
+                ids = [item["investigation_id"] for item in data.get("investigations", [])]
+        except Exception:
+            return []
+
+        self._lookup_cache[subject_ref] = (ids, now + self._lookup_cache_ttl)
+        return ids
 
     # ------------------------------------------------------------------
     # Push (TAXII 2.1 transport)

@@ -46,6 +46,7 @@ class PolicyViolationDetector:
             evidence["port"] = str(event.destination_port)
             violations.append(f"port {event.destination_port} not in policy allow-list")
 
+        inv_id = policy_engine.investigation_id(subject_id)
         return Finding(
             finding_id=str(uuid4()),
             finding_type="policy-violation",
@@ -55,4 +56,6 @@ class PolicyViolationDetector:
             score=0.90,
             summary=f"{subject_id} policy violation: {'; '.join(violations)}",
             evidence=evidence,
+            investigation_id=inv_id,
+            investigation_link_type=policy_engine.investigation_link_type(subject_id) if inv_id else None,
         )

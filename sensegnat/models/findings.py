@@ -14,3 +14,6 @@ class Finding:
     score: float
     summary: str
     evidence: dict[str, str]
+    investigation_id: str | None = None
+    # "confirmed" | "inferred" | "suggested" — None when no investigation context
+    investigation_link_type: str | None = None

@@ -1,0 +1,8 @@
+<header class="page-header" role="banner">
+  {% if page.show_kicker %}<p class="kicker">{{ page.kicker }}</p>{% endif %}
+  <h1 class="project-name">{{ page.title | default: site.title }}</h1>
+  <h2 class="project-tagline">{{ page.description | default: site.description }}</h2>
+  {% if site.github.repository_url %}
+  <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
+  {% endif %}
+</header>
