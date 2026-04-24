@@ -17,6 +17,13 @@ class RuntimeSettings(BaseModel):
     profile_window_days: int = 14
 
 
+class InvestigationSettings(BaseModel):
+    lookup_enabled: bool = False
+    lookup_timeout_s: float = 2.0
+    lookup_cache_ttl_s: int = 60
+    lookup_max_matches: int = 3
+
+
 class GNATSettings(BaseModel):
     base_url: str = ""
     api_key: str = ""
@@ -33,6 +40,7 @@ class SenseGNATSettings(BaseModel):
     storage: StorageSettings = Field(default_factory=StorageSettings)
     policy_path: Path | None = None
     gnat: GNATSettings = Field(default_factory=GNATSettings)
+    investigation: InvestigationSettings = Field(default_factory=InvestigationSettings)
 
 
 def load_settings(path: Path) -> SenseGNATSettings:

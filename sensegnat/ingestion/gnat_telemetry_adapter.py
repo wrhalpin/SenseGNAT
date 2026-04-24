@@ -190,6 +190,7 @@ class GNATTelemetryAdapter(EventAdapter):
         source_user: str | None = str(tags[0]) if tags else None
 
         event_id = str(record.get("flow_id") or record.get("uid") or uuid4())
+        investigation_hint = record.get("_gnat_investigation_hint") or None
 
         return NormalizedNetworkEvent(
             event_id=event_id,
@@ -201,4 +202,5 @@ class GNATTelemetryAdapter(EventAdapter):
             protocol=protocol,
             bytes_out=bytes_out,
             bytes_in=bytes_in,
+            investigation_hint=investigation_hint,
         )

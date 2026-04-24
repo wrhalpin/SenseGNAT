@@ -32,6 +32,14 @@ class PolicyEngine:
     def allowed_protocols(self, subject_id: str) -> frozenset[str]:
         return self._resolve(subject_id, "allowed_protocols", str)
 
+    def investigation_id(self, subject_id: str) -> str | None:
+        """Return the investigation_id declared on the subject's policy rule, if any."""
+        return self._subjects.get(subject_id, {}).get("investigation_id")
+
+    def investigation_link_type(self, subject_id: str) -> str:
+        """Return the link type for the subject's policy rule (defaults to 'confirmed')."""
+        return self._subjects.get(subject_id, {}).get("investigation_link_type", "confirmed")
+
     def _resolve(self, subject_id: str, key: str, cast: type) -> frozenset:
         subject_rules = self._subjects.get(subject_id, {})
         values: set = {cast(v) for v in subject_rules.get(key, [])}

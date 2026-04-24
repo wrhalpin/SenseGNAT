@@ -28,6 +28,8 @@ class NarrativeBuilder:
             f"Severity: {severity}, peak score: {score:.2f}."
         )
 
+        investigation_id, investigation_link_type = self._pick_investigation(findings)
+
         return Narrative(
             subject_id=subject_id,
             finding_count=len(findings),
@@ -35,4 +37,23 @@ class NarrativeBuilder:
             severity=severity,
             score=score,
             summary=summary,
+            investigation_id=investigation_id,
+            investigation_link_type=investigation_link_type,
         )
+
+    @staticmethod
+    def _pick_investigation(findings: list[Finding]) -> tuple[str | None, str | None]:
+        """Return the highest-priority investigation context from a set of findings.
+
+        'confirmed' outranks 'inferred', which outranks 'suggested'. When
+        multiple findings share the same rank, the first encountered wins.
+        """
+        _RANK = {"confirmed": 2, "inferred": 1, "suggested": 0}
+        best = max(
+            (f for f in findings if f.investigation_id),
+            key=lambda f: _RANK.get(f.investigation_link_type or "", 0),
+            default=None,
+        )
+        if best is None:
+            return None, None
+        return best.investigation_id, best.investigation_link_type

@@ -15,3 +15,5 @@ class NormalizedNetworkEvent:
     protocol: str
     bytes_out: int = 0
     bytes_in: int = 0
+    # Set by GNATTelemetryAdapter when the Kafka record carries _gnat_investigation_hint
+    investigation_hint: str | None = None

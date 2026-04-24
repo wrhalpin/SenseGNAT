@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import dataclasses
 from collections import defaultdict
+from uuid import uuid4
 
 from sensegnat.behavior.profiler import ProfileBuilder
 from sensegnat.config.settings import SenseGNATSettings
@@ -36,11 +38,24 @@ class SenseGNATService:
                 if settings.policy_path is not None
                 else None
             )
+            inv = settings.investigation
+            self._investigation_lookup_enabled = inv.lookup_enabled
+            self.connector = GNATConnector(
+                base_url=settings.gnat.base_url,
+                api_key=settings.gnat.api_key,
+                workspace=settings.gnat.workspace,
+                tlp=settings.gnat.tlp,
+                confidence=settings.gnat.confidence,
+                timeout=settings.gnat.timeout,
+                investigation_lookup_timeout_s=inv.lookup_timeout_s,
+                investigation_lookup_cache_ttl_s=inv.lookup_cache_ttl_s,
+            )
         else:
             self.profile_store = InMemoryProfileStore()
             self.finding_store = InMemoryFindingStore()
             self.policy_engine = None
-        self.connector = GNATConnector()
+            self._investigation_lookup_enabled = False
+            self.connector = GNATConnector()
 
     def run_once(self) -> list[dict]:
         events = list(self.adapter.fetch_events())
@@ -55,7 +70,6 @@ class SenseGNATService:
         }
 
         profiles = self.profile_builder.build(events, policy_engine=self.policy_engine)
-        published: list[dict] = []
         findings_by_subject: dict[str, list[Finding]] = defaultdict(list)
         events_by_subject: dict[str, list[NormalizedNetworkEvent]] = defaultdict(list)
 
@@ -70,8 +84,6 @@ class SenseGNATService:
             # Rarity: novel destination vs. historical profile
             finding = self.rare_detector.detect(event, existing_profile)
             if finding is not None:
-                self.finding_store.add(finding)
-                published.append(self.connector.to_record(finding))
                 findings_by_subject[subject_id].append(finding)
 
             # Peer deviation: diverges from current-batch peer group behaviour
@@ -83,30 +95,100 @@ class SenseGNATService:
                 ]
                 finding = self.peer_detector.detect(event, new_profile, peer_profiles or None)
                 if finding is not None:
-                    self.finding_store.add(finding)
-                    published.append(self.connector.to_record(finding))
                     findings_by_subject[subject_id].append(finding)
 
             # Policy violation: destination or port outside explicit allow-list
             finding = self.policy_violation_detector.detect(event, self.policy_engine)
             if finding is not None:
-                self.finding_store.add(finding)
-                published.append(self.connector.to_record(finding))
                 findings_by_subject[subject_id].append(finding)
 
         # Time-window drift: per-subject after all events are seen
         for subject_id, subject_events in events_by_subject.items():
             finding = self.drift_detector.detect(subject_id, subject_events, existing[subject_id])
             if finding is not None:
-                self.finding_store.add(finding)
-                published.append(self.connector.to_record(finding))
                 findings_by_subject[subject_id].append(finding)
+
+        # Path B enrichment — feature-flagged; degrades gracefully on GNAT error
+        if self._investigation_lookup_enabled:
+            findings_by_subject = self._enrich_with_investigation_context(
+                findings_by_subject, events_by_subject
+            )
+
+        # Serialize, persist, and collect published STIX objects
+        run_id = str(uuid4())[:8]
+        published: list[dict] = []
+        stix_ids_by_investigation: dict[str, list[str]] = defaultdict(list)
+
+        for subject_id, subject_findings in findings_by_subject.items():
+            for finding in subject_findings:
+                self.finding_store.add(finding)
+                stix = self.connector.finding_to_stix(finding)
+                published.append(stix)
+                if finding.investigation_id:
+                    stix_ids_by_investigation[finding.investigation_id].append(stix["id"])
 
         # Roll findings up into per-subject narratives
         for subject_id, subject_findings in findings_by_subject.items():
             narrative = self.narrative_builder.build(subject_id, subject_findings)
             if narrative is not None:
-                published.append(self.connector.narrative_to_record(narrative))
+                stix = self.connector.narrative_to_stix(narrative)
+                published.append(stix)
+                if narrative.investigation_id:
+                    stix_ids_by_investigation[narrative.investigation_id].append(stix["id"])
+
+        # One Grouping per distinct investigation_id; untagged findings are left bare
+        for investigation_id, obj_refs in stix_ids_by_investigation.items():
+            published.append(self.connector.make_grouping(investigation_id, obj_refs, run_id))
 
         self.profile_store.put_many(profiles)
         return published
+
+    def _enrich_with_investigation_context(
+        self,
+        findings_by_subject: dict[str, list[Finding]],
+        events_by_subject: dict[str, list[NormalizedNetworkEvent]],
+    ) -> dict[str, list[Finding]]:
+        """Path B: attach investigation context to findings that don't already have it.
+
+        Priority order per finding:
+          1. Path A (policy rule already stamped it) — leave untouched.
+          2. Telemetry hint (_gnat_investigation_hint on the Kafka record) — use directly.
+          3. GNAT API lookup (GET /api/investigations?subject=...) — use first result.
+          4. No match — leave unstamped (path C).
+
+        Never blocks: GNAT errors degrade to path C, never raise.
+        """
+        enriched: dict[str, list[Finding]] = {}
+        for subject_id, findings in findings_by_subject.items():
+            hint = next(
+                (e.investigation_hint for e in events_by_subject.get(subject_id, [])
+                 if e.investigation_hint),
+                None,
+            )
+            new_findings: list[Finding] = []
+            for finding in findings:
+                if finding.investigation_id:
+                    # Path A — already stamped by a policy rule
+                    new_findings.append(finding)
+                elif hint:
+                    # Telemetry hint short-circuits the API call
+                    new_findings.append(dataclasses.replace(
+                        finding,
+                        investigation_id=hint,
+                        investigation_link_type="inferred",
+                    ))
+                else:
+                    try:
+                        inv_ids = self.connector.find_investigations_for_subject(subject_id)
+                    except Exception:
+                        inv_ids = []
+                    if inv_ids:
+                        new_findings.append(dataclasses.replace(
+                            finding,
+                            investigation_id=inv_ids[0],
+                            investigation_link_type="inferred",
+                        ))
+                    else:
+                        new_findings.append(finding)
+            enriched[subject_id] = new_findings
+        return enriched
