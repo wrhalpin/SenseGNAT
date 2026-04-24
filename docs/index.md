@@ -8,6 +8,7 @@ kicker: "GNAT-o-sphere / behavior analytics"
 
 <div style="display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem;">
   <div style="flex: 1; min-width: 0;">
+  <p style=“margin: 0 0 .35rem 0; font-size: .95rem; color: #606c71; text-transform: uppercase; letter-spacing: .06em;”>GNAT-o-sphere / behavior analytics</p>
     <h1 style="margin-top: 0;">SenseGNAT</h1>
     <p>Behavior analytics companion to GNAT. Builds per-entity baselines from
     normalized network telemetry, runs explainable detectors against those
