@@ -2,13 +2,11 @@
 layout: default
 title: SenseGNAT
 description: Behavior analytics companion to GNAT. Network profiling and behavior analysis — see more, know more, stop more.
-show_kicker: true
-kicker: "GNAT-o-sphere / behavior analytics"
 ---
 
 <div style="display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem;">
   <div style="flex: 1; min-width: 0;">
-  <p style=“margin: 0 0 .35rem 0; font-size: .95rem; color: #606c71; text-transform: uppercase; letter-spacing: .06em;”>GNAT-o-sphere / behavior analytics</p>
+    <p style="margin: 0 0 .35rem 0; font-size: .95rem; color: #606c71; text-transform: uppercase; letter-spacing: .06em;">GNAT-o-sphere / behavior analytics</p>
     <h1 style="margin-top: 0;">SenseGNAT</h1>
     <p>Behavior analytics companion to GNAT. Builds per-entity baselines from
     normalized network telemetry, runs explainable detectors against those
@@ -135,8 +133,6 @@ behavioral findings back into GNAT via TAXII 2.1.
 
 SenseGNAT is one of three add-ons that plug into GNAT, the core threat-intel platform. Every sibling emits STIX 2.1 objects and is pulled by GNAT through a documented connector rather than writing into its database directly.
 
-[Canonical workflow documentation →](https://wrhalpin.github.io/gnat-o-sphere/workflow.html)
-
 <div class="gnatophere-grid">
 
   <div class="gnat-card gnat-card-gnat">
@@ -160,6 +156,54 @@ SenseGNAT is one of three add-ons that plug into GNAT, the core threat-intel pla
     <a class="gnat-card-link gnat-link-red" href="https://wrhalpin.github.io/RedGNAT/">Learn more</a>
   </div>
 
+</div>
+
+### Canonical Workflow
+
+<div class="flow-teaser">
+  <div class="flow-stage">
+    <div class="flow-node flow-node--neutral">
+      <span class="flow-step">Collect</span>
+      <strong>Telemetry &amp; Sources</strong>
+      <p>External indicators and raw network telemetry enter the ecosystem</p>
+    </div>
+  </div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-stage">
+    <div class="flow-node flow-node--gnat">
+      <span class="flow-step">Process</span>
+      <strong>GNAT</strong>
+      <p>Ingest, normalize, convert to STIX, and route to addons</p>
+    </div>
+  </div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-stage flow-stage--addons">
+    <div class="flow-node flow-node--sense">
+      <strong>SenseGNAT</strong>
+      <p>Behavioral profiling &amp; anomaly detection</p>
+    </div>
+    <div class="flow-node flow-node--sand">
+      <strong>SandGNAT</strong>
+      <p>Malware detonation &amp; artifact enrichment</p>
+    </div>
+    <div class="flow-node flow-node--red">
+      <strong>RedGNAT</strong>
+      <p>Adversary emulation &amp; validation</p>
+    </div>
+  </div>
+  <div class="flow-arrow">&rarr;</div>
+  <div class="flow-stage">
+    <div class="flow-node flow-node--neutral">
+      <span class="flow-step">Report</span>
+      <strong>Investigate &amp; Act</strong>
+      <p>Unified investigation graph, reporting, and operator action</p>
+    </div>
+  </div>
+</div>
+
+<div class="flow-actions">
+  <a href="https://wrhalpin.github.io/GNAT/diagram.html">View full diagram &rarr;</a>
+  <a href="https://wrhalpin.github.io/GNAT/workflow.html">Read the workflow doc &rarr;</a>
 </div>
 
 Licensed under [Apache 2.0](https://github.com/wrhalpin/SenseGNAT/blob/main/LICENSE).
