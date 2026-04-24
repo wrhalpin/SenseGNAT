@@ -47,9 +47,9 @@ quadrants for four kinds of reader-intent:
 ## What SenseGNAT does, end to end
 
 1. **Ingest** — an `EventAdapter` reads telemetry from any source (Zeek
-   conn.log, Suricata EVE JSON, CSV, GNAT's live Kafka telemetry topic, or
-   custom) and yields `NormalizedNetworkEvent` objects with a consistent
-   five-tuple schema.
+   conn.log, Suricata EVE JSON, CSV, Splunk REST API, GNAT's live Kafka
+   telemetry topic, or custom) and yields `NormalizedNetworkEvent` objects
+   with a consistent five-tuple schema.
 
 2. **Profile** — `ProfileBuilder` aggregates events into per-entity
    `BehaviorProfile` objects. Profiles are seeded from YAML policy rules
@@ -107,22 +107,22 @@ quadrants for four kinds of reader-intent:
 
 | Area | Component |
 |---|---|
-| **Adapters** | `SampleEventAdapter`, `CsvEventAdapter`, `ZeekConnLogAdapter`, `SuricataEveAdapter`, `GNATTelemetryAdapter` |
+| **Adapters** | `SampleEventAdapter`, `CsvEventAdapter`, `ZeekConnLogAdapter`, `SuricataEveAdapter`, `GNATTelemetryAdapter`, `SplunkEventAdapter` |
 | **Detectors** | `RareDestinationDetector`, `PeerDeviationDetector`, `PolicyViolationDetector`, `TimeWindowDriftDetector` |
 | **Storage** | `InMemoryProfileStore`, `InMemoryFindingStore`, `JsonProfileStore`, `JsonFindingStore` |
 | **Policy** | `PolicyEngine` — YAML-driven group/subject allow-lists with peer-group assignment |
 | **Narrative** | `NarrativeBuilder` — per-entity severity rollup and type-frequency summary |
 | **Connector** | `GNATConnector` — STIX 2.1 Indicator + Note, TAXII 2.1 POST with Bearer auth |
 | **Config** | `SenseGNATSettings` — Pydantic model, YAML loader |
-| **Tests** | 231 passing tests |
+| **Tests** | 322 passing tests |
 
 ---
 
 ## Status
 
-All three phases are complete. Five source adapters, four explainable
-detectors, a fully-wired GNAT connector, and a live Kafka telemetry adapter
-are shipped. Profile accumulation, policy-guided baselining, and narrative
+All three phases are complete. Six source adapters, four explainable
+detectors, a fully-wired GNAT connector, a live Kafka telemetry adapter,
+and a Splunk REST API adapter are shipped. Profile accumulation, policy-guided baselining, and narrative
 building are complete. SenseGNAT now operates as a bidirectional partner
 to GNAT: consuming raw sensor telemetry from GNAT's Kafka topic and publishing
 behavioral findings back into GNAT via TAXII 2.1.

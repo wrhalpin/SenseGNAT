@@ -366,3 +366,127 @@ A record is silently skipped when:
 - The consumer is always closed in a `finally` block, even when `max_messages` fires early.
 - Epoch millisecond timestamps (Kafka's native format) are detected by value `> 1e10` and divided by 1 000 to produce seconds before conversion.
 - `dest_port` is absent on some `alert` records that do not carry a full 5-tuple; such records are skipped.
+
+---
+
+## SplunkEventAdapter
+
+**Module:** `sensegnat/ingestion/splunk_adapter.py`
+
+Queries a Splunk instance via the REST API and yields `NormalizedNetworkEvent` objects. The caller supplies a complete SPL search string; the adapter executes it, paginates through all results, and maps CIM-normalised field names to `NormalizedNetworkEvent`. Non-CIM sourcetypes can be handled by including `rename` or `eval` commands in the SPL query before the results reach the adapter.
+
+**Requires:** `splunk-sdk` (optional runtime dependency — `pip install sensegnat[splunk]`).
+
+### Constructor
+
+```python
+SplunkEventAdapter(
+    spl_query: str,
+    host: str,
+    port: int = 8089,
+    token: str | None = None,
+    username: str | None = None,
+    password: str | None = None,
+    earliest_time: str = "-24h",
+    latest_time: str = "now",
+    max_results: int | None = None,
+    page_size: int = 500,
+)
+```
+
+| Parameter | Default | Description |
+|---|---|---|
+| `spl_query` | — | Complete SPL search string. |
+| `host` | — | Splunk instance hostname or IP. |
+| `port` | `8089` | Splunk management port. |
+| `token` | `None` | Bearer token. Takes priority over `username`/`password`. |
+| `username` | `None` | Basic auth username. Used when `token` is not set. |
+| `password` | `None` | Basic auth password. |
+| `earliest_time` | `"-24h"` | Splunk time range start modifier. |
+| `latest_time` | `"now"` | Splunk time range end modifier. |
+| `max_results` | `None` | Stop after yielding this many events. `None` drains all results. |
+| `page_size` | `500` | Raw records fetched per pagination request. |
+
+### Authentication
+
+Token auth (`token=`) is recommended for production deployments. When both `token` and `username`/`password` are supplied, `token` takes priority.
+
+```python
+# Token auth (recommended)
+SplunkEventAdapter(spl_query="...", host="splunk.corp", token="eyJ...")
+
+# Basic auth
+SplunkEventAdapter(spl_query="...", host="splunk.corp", username="admin", password="secret")
+```
+
+### Field mapping
+
+The adapter tries CIM primary names first, then falls back to common vendor-specific aliases. All fields are read from the flat Splunk result dict (i.e., after SPL field extraction).
+
+| NormalizedNetworkEvent field | Primary (CIM) | Fallbacks |
+|---|---|---|
+| `source_host` | `src` | `src_ip`, `source_ip`, `source` |
+| `destination` | `dest` | `dest_ip`, `destination_ip`, `destination` |
+| `destination_port` | `dest_port` | `destination_port` |
+| `protocol` | `transport` | `protocol`, `proto` |
+| `bytes_out` | `bytes_out` | `bytes_sent`, `out_bytes` |
+| `bytes_in` | `bytes_in` | `bytes_received`, `in_bytes` |
+| `seen_at` | `_time` | Unix epoch float string |
+| `event_id` | `_cd` | auto `uuid4()` |
+| `source_user` | `user` | `src_user` |
+
+`_time` is Splunk's native timestamp field and is always a Unix epoch float string in REST API results. `_cd` is Splunk's internal `bucket:offset` identifier and serves as a stable per-event ID.
+
+### Skip conditions
+
+A record is silently skipped when, after fallback resolution:
+
+- `src` (or any fallback) is absent or empty.
+- `dest` (or any fallback) is absent or empty.
+- `dest_port` (or fallback) is absent.
+- `dest_port` cannot be parsed as an integer.
+
+### Example usage
+
+```python
+from pathlib import Path
+from sensegnat.ingestion.splunk_adapter import SplunkEventAdapter
+
+adapter = SplunkEventAdapter(
+    spl_query=(
+        "search index=network (sourcetype=stream:tcp OR sourcetype=netflow) "
+        "| fields _time, _cd, src, dest, dest_port, transport, bytes_in, bytes_out, user"
+    ),
+    host="splunk.corp",
+    port=8089,
+    token="eyJ...",
+    earliest_time="-1h",
+)
+
+for event in adapter.fetch_events():
+    print(event.source_host, "→", event.destination, event.destination_port)
+```
+
+### Recommended SPL patterns
+
+**CIM-normalised sources** (Splunk Stream, Splunk App for PAN-OS, etc.) — fields map directly without renaming:
+
+```spl
+search index=network sourcetype=stream:tcp
+| fields _time, _cd, src, dest, dest_port, transport, bytes_in, bytes_out, user
+```
+
+**Non-CIM sources** — use `rename` in SPL to normalise field names before the adapter sees them:
+
+```spl
+search index=network sourcetype=cisco:asa
+| rename src_ip AS src, dst_ip AS dest, dst_port AS dest_port, protocol AS transport
+| fields _time, _cd, src, dest, dest_port, transport, bytes_in, bytes_out
+```
+
+### Notes
+
+- The Splunk job is created with `exec_mode="blocking"`, so `fetch_events()` blocks until the search completes. For long-running searches, set an appropriate `earliest_time`/`latest_time` window to bound query cost.
+- `source_user` is `None` for most network telemetry sourcetypes. It is populated when Splunk's identity enrichment has added a `user` or `src_user` field to the event.
+- The connection is created lazily inside `fetch_events()`. Constructing a `SplunkEventAdapter` does not open a network connection.
+- The adapter raises `ImportError` with an install hint if `splunk-sdk` is not installed.

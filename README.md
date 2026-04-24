@@ -10,13 +10,13 @@ SenseGNAT is a behavioral analytics companion to GNAT, the threat intelligence p
 
 ## Key capabilities
 
-- **5 source adapters** — Zeek conn.log, Suricata EVE JSON, named-column CSV, a live Kafka/GNAT telemetry feed, and a built-in sample fixture
+- **6 source adapters** — Zeek conn.log, Suricata EVE JSON, named-column CSV, a live Kafka/GNAT telemetry feed, Splunk REST API (SPL query-driven), and a built-in sample fixture
 - **4 explainable detectors** — rare destination, peer deviation, policy violation, and time-window drift
 - **Policy-guided baselining** — YAML rules seed profiles before telemetry arrives, solving the cold-start problem
 - **STIX 2.1 output via TAXII 2.1** — findings become `indicator` objects; narratives become `note` objects in GNAT
 - **Cross-tool investigation context** — findings stamp `x_gnat_investigation_id` via policy rules (Path A), Kafka telemetry hints (Path B), or a GNAT subject-lookup API (Path B, feature-flagged off by default)
 - **JSON-backed profile persistence** — baselines accumulate across runs via `BehaviorProfile.merge()`
-- **272 passing tests** — unit and integration coverage across all adapters, detectors, stores, and investigation-context paths
+- **322 passing tests** — unit and integration coverage across all adapters, detectors, stores, and investigation-context paths
 
 ---
 
@@ -81,6 +81,7 @@ Full data flow and design rationale: [docs/explanation/architecture.md](docs/exp
 | `ZeekConnLogAdapter` | Zeek `conn.log` TSV with dynamic `#fields` header |
 | `SuricataEveAdapter` | Suricata EVE JSON `flow` and `alert` records |
 | `GNATTelemetryAdapter` | Live sensor telemetry from GNAT's Kafka topic (`gnat.telemetry`) |
+| `SplunkEventAdapter` | SPL query-driven pull from Splunk REST API; CIM field mapping with vendor fallbacks |
 
 ### Detectors
 
