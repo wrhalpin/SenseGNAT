@@ -152,7 +152,7 @@ SenseGNAT is one of three add-ons that plug into GNAT, the core threat-intel pla
   <div class="gnat-card gnat-card-red">
     <span class="gnat-card-tag">Addon</span>
     <h3>RedGNAT</h3>
-    <p>Continuous automated red teaming — ingest threat intel, construct adversary emulation scenarios, execute with safety controls.</p>
+    <p>Continuous automated readiness testing — ingest threat intel, construct adversary emulation scenarios, execute with safety controls.</p>
     <a class="gnat-card-link gnat-link-red" href="https://wrhalpin.github.io/RedGNAT/">Learn more</a>
   </div>
 
