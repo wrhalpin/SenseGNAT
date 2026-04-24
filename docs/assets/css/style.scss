@@ -179,6 +179,94 @@
 .gnat-card-red  { border-color: #C0392B; h3 { color: #C0392B; } }
 .gnat-link-red  { background: #C0392B; }
 
+// ─── Canonical workflow diagram ───────────────────────────────────────────────
+.flow-teaser {
+  display: flex;
+  align-items: stretch;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  color: #aaa;
+  flex-shrink: 0;
+  padding-top: .5rem;
+}
+
+.flow-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.flow-stage--addons { flex: 1.2; }
+
+.flow-node {
+  background: #fff;
+  border: 1px solid #ECEAF8;
+  border-radius: 10px;
+  padding: .75rem 1rem;
+  flex: 1;
+  box-shadow: 0 1px 4px rgba(91, 45, 168, 0.05);
+
+  strong {
+    display: block;
+    font-size: .95rem;
+    font-weight: 600;
+    margin-bottom: .2rem;
+    color: #111321;
+  }
+
+  p {
+    margin: 0;
+    font-size: .78rem;
+    color: #666;
+    line-height: 1.4;
+  }
+}
+
+.flow-step {
+  display: block;
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: #aaa;
+  margin-bottom: .3rem;
+}
+
+.flow-node--gnat   { border-color: #C41E2A; strong { color: #C41E2A; } }
+.flow-node--sense  { border-color: #5B2DA8; strong { color: #5B2DA8; } }
+.flow-node--sand   { border-color: #D4A017; strong { color: #D4A017; } }
+.flow-node--red    { border-color: #C0392B; strong { color: #C0392B; } }
+.flow-node--neutral { border-color: #ECEAF8; strong { color: #111321; } }
+
+.flow-actions {
+  display: flex;
+  gap: 1.5rem;
+  font-size: .875rem;
+  justify-content: flex-end;
+  margin-top: .5rem;
+
+  a {
+    color: #5B2DA8;
+    text-decoration: none;
+
+    &:hover {
+      color: #7E57FF;
+      text-decoration: underline;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .flow-teaser { flex-direction: column; }
+  .flow-arrow  { justify-content: center; transform: rotate(90deg); }
+}
+
 // ─── Footer ───────────────────────────────────────────────────────────────────
 // Footer
 .site-footer {
