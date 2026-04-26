@@ -90,7 +90,7 @@ EventAdapter.fetch_events()
 
 ## What's implemented
 
-- Four adapters: `SampleEventAdapter` (fixture), `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps), `ZeekConnLogAdapter` (Zeek conn.log TSV, dynamic #fields header), `SuricataEveAdapter` (EVE JSON flow/alert records)
+- Six adapters: `SampleEventAdapter` (fixture), `CsvEventAdapter` (named-column CSV, ISO/epoch timestamps), `ZeekConnLogAdapter` (Zeek conn.log TSV, dynamic #fields header), `SuricataEveAdapter` (EVE JSON flow/alert records), `GNATTelemetryAdapter` (live Kafka topic, optional `kafka-python-ng`), `SplunkEventAdapter` (SPL query via Splunk REST API, CIM field mapping, optional `splunk-sdk`)
 - Four detectors: `RareDestinationDetector`, `PeerDeviationDetector`, `PolicyViolationDetector`, `TimeWindowDriftDetector`
 - `PolicyEngine` — loads per-subject/group rules from YAML; seeds profiles before telemetry arrives
 - `NarrativeBuilder` — rolls per-subject findings into a `Narrative` with severity rollup and type frequency
@@ -103,7 +103,8 @@ EventAdapter.fetch_events()
 - `sensegnat.common` — `to_dict` (recursive JSON-safe serializer) and `utcnow` (timezone-aware now)
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
 - `GNATTelemetryAdapter` — reads live sensor records from the Kafka topic shared with GNAT; handles `netflow`, `ids_alert`, `honeypot` sensor types; supports NetFlow v9 field names; optional `kafka-python-ng` dependency (`pip install kafka-python-ng`)
-- 231 passing tests (unit + integration), including `tests/test_gnat_connector.py` (45 tests), `tests/test_gnat_telemetry_adapter.py` (42 tests)
+- `SplunkEventAdapter` — runs a caller-supplied SPL query against Splunk's REST API; maps CIM fields (`src`, `dest`, `transport`, `bytes_out/in`) with vendor fallbacks; token or u/p auth; paginated; optional `splunk-sdk` dependency (`pip install sensegnat[splunk]`)
+- 322 passing tests (unit + integration)
 - Diátaxis documentation structure — `docs/tutorials/`, `docs/how-to/`, `docs/reference/`, `docs/explanation/`
 - GitHub Pages site — `docs/_config.yml`, `docs/index.md`, brand palette CSS override, full logo kit in `docs/assets/images/`
 
