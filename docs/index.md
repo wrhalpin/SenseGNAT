@@ -156,6 +156,13 @@ SenseGNAT is one of three add-ons that plug into GNAT, the core threat-intel pla
     <a class="gnat-card-link gnat-link-red" href="https://wrhalpin.github.io/RedGNAT/">Learn more</a>
   </div>
 
+  <div class="gnat-card gnat-card-gui">
+    <span class="gnat-card-tag">Interface</span>
+    <h3>GNAT-gui</h3>
+    <p>The visual interface for the GNAT ecosystem — investigation timelines, threat graphs, connector dashboards, and workflow management in a unified web UI.</p>
+    <a class="gnat-card-link gnat-link-gui" href="https://wrhalpin.github.io/GNAT-gui/">Learn more</a>
+  </div>
+
 </div>
 
 ### Canonical Workflow
