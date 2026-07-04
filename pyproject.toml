@@ -1,6 +1,6 @@
 [project]
 name = "sensegnat"
-version = "0.1.0"
+version = "0.2.0"
 description = "Behavior analytics companion capability for GNAT"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,6 +13,16 @@ dependencies = [
 kafka = ["kafka-python-ng>=2.0"]
 splunk = ["splunk-sdk>=2.0"]
 
+[project.scripts]
+sensegnat = "sensegnat.cli:main"
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+
+[[tool.mypy.overrides]]
+module = ["yaml", "splunklib.*", "kafka"]
+ignore_missing_imports = true

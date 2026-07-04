@@ -31,8 +31,12 @@ class SenseGNATService:
         self.drift_detector = TimeWindowDriftDetector()
         self.narrative_builder = NarrativeBuilder()
         if settings is not None:
-            self.profile_store = JsonProfileStore(settings.storage.profile_store_path)
-            self.finding_store = JsonFindingStore(settings.storage.finding_store_path)
+            self.profile_store: JsonProfileStore | InMemoryProfileStore = JsonProfileStore(
+                settings.storage.profile_store_path
+            )
+            self.finding_store: JsonFindingStore | InMemoryFindingStore = JsonFindingStore(
+                settings.storage.finding_store_path
+            )
             self.policy_engine: PolicyEngine | None = (
                 PolicyEngine.from_yaml(settings.policy_path)
                 if settings.policy_path is not None

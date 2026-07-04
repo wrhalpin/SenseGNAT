@@ -29,4 +29,4 @@ jobs:
           pip install -e .
           pip install mypy
       - name: Run mypy
-        run: mypy sensegnat/ || true
+        run: mypy sensegnat/
