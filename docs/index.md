@@ -114,7 +114,7 @@ quadrants for four kinds of reader-intent:
 | **Narrative** | `NarrativeBuilder` — per-entity severity rollup and type-frequency summary |
 | **Connector** | `GNATConnector` — STIX 2.1 Indicator + Note, TAXII 2.1 POST with Bearer auth |
 | **Config** | `SenseGNATSettings` — Pydantic model, YAML loader |
-| **Tests** | 322 passing tests |
+| **Tests** | 333 passing tests |
 
 ---
 

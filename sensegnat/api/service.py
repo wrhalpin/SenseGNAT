@@ -140,6 +140,10 @@ class SenseGNATService:
         for investigation_id, obj_refs in stix_ids_by_investigation.items():
             published.append(self.connector.make_grouping(investigation_id, obj_refs, run_id))
 
+        # Push the exact serialized objects so Grouping object_refs stay valid.
+        # Record-only connectors skip with a warning; push errors never raise.
+        self.connector.push_objects(published)
+
         self.profile_store.put_many(profiles)
         return published
 

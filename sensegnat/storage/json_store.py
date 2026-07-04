@@ -30,6 +30,8 @@ def _finding_from_dict(d: dict) -> Finding:
         score=d["score"],
         summary=d["summary"],
         evidence=d["evidence"],
+        investigation_id=d.get("investigation_id"),
+        investigation_link_type=d.get("investigation_link_type"),
     )
 
 

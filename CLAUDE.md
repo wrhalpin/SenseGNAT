@@ -30,8 +30,6 @@ Run tests:
 pytest
 ```
 
-> **Known issue:** `pyproject.toml` currently sets `pythonpath = ["src"]` which points nowhere. After `pip install -e .` this doesn't matter, but the setting should be corrected to `pythonpath = ["."]` or removed.
-
 ---
 
 ## Package layout
@@ -104,7 +102,7 @@ EventAdapter.fetch_events()
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
 - `GNATTelemetryAdapter` — reads live sensor records from the Kafka topic shared with GNAT; handles `netflow`, `ids_alert`, `honeypot` sensor types; supports NetFlow v9 field names; optional `kafka-python-ng` dependency (`pip install kafka-python-ng`)
 - `SplunkEventAdapter` — runs a caller-supplied SPL query against Splunk's REST API; maps CIM fields (`src`, `dest`, `transport`, `bytes_out/in`) with vendor fallbacks; token or u/p auth; paginated; optional `splunk-sdk` dependency (`pip install sensegnat[splunk]`)
-- 322 passing tests (unit + integration)
+- 333 passing tests (unit + integration)
 - Diátaxis documentation structure — `docs/tutorials/`, `docs/how-to/`, `docs/reference/`, `docs/explanation/`
 - GitHub Pages site — `docs/_config.yml`, `docs/index.md`, brand palette CSS override, full logo kit in `docs/assets/images/`
 

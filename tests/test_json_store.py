@@ -126,3 +126,46 @@ class TestJsonFindingStore:
 
         results = JsonFindingStore(path).list_all()
         assert len(results) == 2
+
+    def test_investigation_context_roundtrip(self, tmp_path: Path) -> None:
+        path = tmp_path / "findings.json"
+        stamped = Finding(
+            finding_id="find-inv",
+            finding_type="policy-violation",
+            seen_at=datetime(2024, 1, 15, 12, 0, 0, tzinfo=timezone.utc),
+            subject_id="alice",
+            severity="high",
+            score=0.9,
+            summary="alice violated an allow-list rule",
+            evidence={"destination": "198.51.100.44"},
+            investigation_id="IC-2026-0042",
+            investigation_link_type="confirmed",
+        )
+        JsonFindingStore(path).add(stamped)
+
+        reloaded = JsonFindingStore(path).list_all()[0]
+        assert reloaded.investigation_id == "IC-2026-0042"
+        assert reloaded.investigation_link_type == "confirmed"
+
+    def test_unstamped_finding_roundtrips_with_none_context(self, tmp_path: Path) -> None:
+        path = tmp_path / "findings.json"
+        JsonFindingStore(path).add(_sample_finding())
+
+        reloaded = JsonFindingStore(path).list_all()[0]
+        assert reloaded.investigation_id is None
+        assert reloaded.investigation_link_type is None
+
+    def test_legacy_file_without_investigation_keys_loads(self, tmp_path: Path) -> None:
+        # Files written before the investigation fields existed have no such keys
+        path = tmp_path / "findings.json"
+        path.write_text(
+            """[{"finding_id": "find-legacy", "finding_type": "rare-destination",
+                 "seen_at": "2024-01-15T12:00:00+00:00", "subject_id": "alice",
+                 "severity": "medium", "score": 0.65, "summary": "legacy",
+                 "evidence": {}}]"""
+        )
+
+        results = JsonFindingStore(path).list_all()
+        assert len(results) == 1
+        assert results[0].investigation_id is None
+        assert results[0].investigation_link_type is None
