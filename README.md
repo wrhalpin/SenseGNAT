@@ -16,7 +16,8 @@ SenseGNAT is a behavioral analytics companion to GNAT, the threat intelligence p
 - **STIX 2.1 output via TAXII 2.1** — findings become `indicator` objects; narratives become `note` objects in GNAT
 - **Cross-tool investigation context** — findings stamp `x_gnat_investigation_id` via policy rules (Path A), Kafka telemetry hints (Path B), or a GNAT subject-lookup API (Path B, feature-flagged off by default)
 - **JSON-backed profile persistence** — baselines accumulate across runs via `BehaviorProfile.merge()`
-- **333 passing tests** — unit and integration coverage across all adapters, detectors, stores, and investigation-context paths
+- **`sensegnat` CLI** — run the pipeline from a single YAML config; adapters built via factory, `${ENV_VAR}` secret interpolation, optional interval loop
+- **361 passing tests** — unit and integration coverage across all adapters, detectors, stores, CLI, and investigation-context paths
 
 ---
 
@@ -26,14 +27,19 @@ SenseGNAT is a behavioral analytics companion to GNAT, the threat intelligence p
 # 1. Install in editable mode (required — package lives at the project root)
 pip install -e .
 
-# 2. Run the built-in example
-python examples/run_phase_a.py
+# 2. Run the pipeline via the CLI against the example config
+sensegnat run --config examples/sensegnat.example.yaml
 
-# 3. Run the test suite
+# 3. Or run on a loop (every 5 minutes) with INFO logging
+sensegnat -v run --config examples/sensegnat.example.yaml --interval 300
+
+# 4. Run the test suite
 pytest
 ```
 
-The example runs against an in-memory store by default. On the first run it builds a baseline profile and emits no findings. On the second run it detects the novel destination and emits a STIX `indicator` and a STIX `note`. See [Tutorial 1](docs/tutorials/01-getting-started.md) for a step-by-step walkthrough.
+The `adapter:` section of the config selects the telemetry source (`sample`, `csv`, `zeek`, `suricata`, `gnat_telemetry`, or `splunk`); secrets can be referenced as `${ENV_VAR}` in any config string. See [docs/reference/configuration.md](docs/reference/configuration.md).
+
+Each run prints a summary of the STIX objects published. Baselines persist in the JSON stores configured under `storage:`, so detections sharpen across runs. See [Tutorial 1](docs/tutorials/01-getting-started.md) for a step-by-step walkthrough.
 
 ---
 
