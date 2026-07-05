@@ -1,5 +1,15 @@
 product_name: SenseGNAT
 tagline: Behavior is the signal.
+adapter:
+  type: sample
+  # For file-based adapters:
+  #   type: csv | zeek | suricata
+  #   path: ./examples/sample_events.csv
+  # For Splunk (secrets via env-var interpolation):
+  #   type: splunk
+  #   spl_query: "search index=network sourcetype=stream:tcp | fields _time, src, dest, dest_port, transport, bytes_in, bytes_out"
+  #   host: splunk.corp
+  #   token: "${SPLUNK_TOKEN}"
 runtime:
   environment: dev
   lookback_hours: 24
@@ -8,3 +18,6 @@ storage:
   profile_store_path: ./var/profiles.json
   finding_store_path: ./var/findings.json
 policy_path: ./examples/sensegnat.example.policies.yaml
+# gnat:
+#   base_url: https://gnat.corp
+#   api_key: "${GNAT_API_KEY}"

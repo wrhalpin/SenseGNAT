@@ -31,8 +31,12 @@ class SenseGNATService:
         self.drift_detector = TimeWindowDriftDetector()
         self.narrative_builder = NarrativeBuilder()
         if settings is not None:
-            self.profile_store = JsonProfileStore(settings.storage.profile_store_path)
-            self.finding_store = JsonFindingStore(settings.storage.finding_store_path)
+            self.profile_store: JsonProfileStore | InMemoryProfileStore = JsonProfileStore(
+                settings.storage.profile_store_path
+            )
+            self.finding_store: JsonFindingStore | InMemoryFindingStore = JsonFindingStore(
+                settings.storage.finding_store_path
+            )
             self.policy_engine: PolicyEngine | None = (
                 PolicyEngine.from_yaml(settings.policy_path)
                 if settings.policy_path is not None
@@ -139,6 +143,10 @@ class SenseGNATService:
         # One Grouping per distinct investigation_id; untagged findings are left bare
         for investigation_id, obj_refs in stix_ids_by_investigation.items():
             published.append(self.connector.make_grouping(investigation_id, obj_refs, run_id))
+
+        # Push the exact serialized objects so Grouping object_refs stay valid.
+        # Record-only connectors skip with a warning; push errors never raise.
+        self.connector.push_objects(published)
 
         self.profile_store.put_many(profiles)
         return published

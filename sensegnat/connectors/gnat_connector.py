@@ -236,6 +236,18 @@ class GNATConnector:
             return PushResult()
         return self._push_bundle([self.narrative_to_stix(n) for n in narratives])
 
+    def push_objects(self, objects: list[dict]) -> PushResult:
+        """Push pre-serialized STIX objects as one bundle.
+
+        Use this when the objects were already serialized (e.g. by
+        SenseGNATService.run_once), so their STIX IDs stay consistent with
+        any Grouping object_refs that reference them — push_findings and
+        push_narratives re-serialize and would mint new IDs.
+        """
+        if not objects:
+            return PushResult()
+        return self._push_bundle(objects)
+
     def _push_bundle(self, objects: list[dict]) -> PushResult:
         if not self._base_url or not self._api_key:
             logger.warning("GNATConnector: no base_url/api_key configured — push skipped")

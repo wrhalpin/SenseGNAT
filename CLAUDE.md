@@ -18,7 +18,14 @@ Install in editable mode first (required; the package lives at the project root,
 pip install -e .
 ```
 
-Run the Phase A example:
+Run the pipeline via the CLI (`sensegnat/cli.py`, wired via `[project.scripts]`):
+
+```bash
+sensegnat run --config examples/sensegnat.example.yaml   # one pass
+sensegnat -v run --config <yaml> --interval 300          # loop mode, INFO logs
+```
+
+Or run the Phase A example script:
 
 ```bash
 python examples/run_phase_a.py
@@ -30,8 +37,6 @@ Run tests:
 pytest
 ```
 
-> **Known issue:** `pyproject.toml` currently sets `pythonpath = ["src"]` which points nowhere. After `pip install -e .` this doesn't matter, but the setting should be corrected to `pythonpath = ["."]` or removed.
-
 ---
 
 ## Package layout
@@ -39,7 +44,8 @@ pytest
 ```
 sensegnat/
   models/       # Frozen dataclasses — the data contracts (events, entities, findings, narratives)
-  ingestion/    # EventAdapter ABC + concrete source adapters (SampleEventAdapter, CsvEventAdapter)
+  ingestion/    # EventAdapter ABC + concrete source adapters + build_adapter() factory
+  cli.py        # argparse CLI — `sensegnat run --config <yaml>` entry point
   behavior/     # ProfileBuilder — aggregates events into BehaviorProfile objects
   detection/    # Explainable detectors (RareDestinationDetector, PeerDeviationDetector, etc.)
   storage/      # InMemoryProfileStore / InMemoryFindingStore + JSON-backed equivalents
@@ -104,7 +110,9 @@ EventAdapter.fetch_events()
 - CI — `.github/workflows/ci.yml` runs `pip install -e . && pytest` on push/PR to main
 - `GNATTelemetryAdapter` — reads live sensor records from the Kafka topic shared with GNAT; handles `netflow`, `ids_alert`, `honeypot` sensor types; supports NetFlow v9 field names; optional `kafka-python-ng` dependency (`pip install kafka-python-ng`)
 - `SplunkEventAdapter` — runs a caller-supplied SPL query against Splunk's REST API; maps CIM fields (`src`, `dest`, `transport`, `bytes_out/in`) with vendor fallbacks; token or u/p auth; paginated; optional `splunk-sdk` dependency (`pip install sensegnat[splunk]`)
-- 322 passing tests (unit + integration)
+- `sensegnat` CLI (`sensegnat/cli.py`) — `run --config <yaml>` with optional `--interval`; adapters built from the `adapter:` config section via `build_adapter()` (`sensegnat/ingestion/factory.py`); `${ENV_VAR}` interpolation in config strings for secrets; `-v/-vv` logging
+- Versioning & release — version 0.2.0 single-sourced from `pyproject.toml` (exposed as `sensegnat.__version__`); `CHANGELOG.md`; `.github/workflows/release.yml` builds sdist/wheel on `v*` tags; mypy CI is blocking with `[tool.mypy]` config
+- 361 passing tests (unit + integration)
 - Diátaxis documentation structure — `docs/tutorials/`, `docs/how-to/`, `docs/reference/`, `docs/explanation/`
 - GitHub Pages site — `docs/_config.yml`, `docs/index.md`, brand palette CSS override, full logo kit in `docs/assets/images/`
 

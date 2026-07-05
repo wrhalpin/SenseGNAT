@@ -12,7 +12,21 @@ Configuration is managed through Pydantic `BaseModel` classes. The root model is
 def load_settings(path: Path) -> SenseGNATSettings
 ```
 
-Reads the YAML file at `path`, parses it with `yaml.safe_load`, and validates the result against `SenseGNATSettings` using `model_validate`. Raises Pydantic `ValidationError` on schema violations.
+Reads the YAML file at `path`, parses it with `yaml.safe_load`, expands environment-variable references, and validates the result against `SenseGNATSettings` using `model_validate`. Raises Pydantic `ValidationError` on schema violations.
+
+### Environment-variable interpolation
+
+Any `${VAR}` reference inside a YAML string value is replaced with the value of that environment variable at load time. Use this to keep secrets out of config files:
+
+```yaml
+gnat:
+  api_key: "${GNAT_API_KEY}"
+adapter:
+  type: splunk
+  token: "${SPLUNK_TOKEN}"
+```
+
+Referencing an **unset** variable raises `ValueError` naming the missing variable — an empty credential is never silently substituted. `$VAR` without braces and `$` in ordinary text are left untouched. Interpolation applies recursively through nested mappings and lists; non-string values are never modified.
 
 ---
 
@@ -22,12 +36,14 @@ Root settings model.
 
 ```python
 class SenseGNATSettings(BaseModel):
-    product_name: str             = "SenseGNAT"
-    tagline:      str             = "Behavior is the signal."
-    runtime:      RuntimeSettings = RuntimeSettings()
-    storage:      StorageSettings = StorageSettings()
-    policy_path:  Path | None     = None
-    gnat:         GNATSettings    = GNATSettings()
+    product_name:  str                     = "SenseGNAT"
+    tagline:       str                     = "Behavior is the signal."
+    adapter:       AdapterSettings | None  = None
+    runtime:       RuntimeSettings         = RuntimeSettings()
+    storage:       StorageSettings         = StorageSettings()
+    policy_path:   Path | None             = None
+    gnat:          GNATSettings            = GNATSettings()
+    investigation: InvestigationSettings   = InvestigationSettings()
 ```
 
 ### Fields
@@ -36,10 +52,40 @@ class SenseGNATSettings(BaseModel):
 |---|---|---|---|
 | `product_name` | `str` | `"SenseGNAT"` | Display name for the product. Informational only. |
 | `tagline` | `str` | `"Behavior is the signal."` | Product tagline. Informational only. |
+| `adapter` | `AdapterSettings \| None` | `None` | Which `EventAdapter` the CLI builds. `None` means the adapter must be constructed in code. |
 | `runtime` | `RuntimeSettings` | see below | Runtime behaviour parameters. |
 | `storage` | `StorageSettings` | see below | Paths for JSON-backed profile and finding stores. |
 | `policy_path` | `Path \| None` | `None` | Path to the YAML policy file. `None` means no policy engine is instantiated. |
 | `gnat` | `GNATSettings` | see below | GNAT/TAXII connection parameters. |
+| `investigation` | `InvestigationSettings` | see [investigation-context](investigation-context.md) | Path B lookup feature flag and tuning. |
+
+---
+
+## `AdapterSettings`
+
+Selects and parameterizes the `EventAdapter` that `sensegnat run` builds via `build_adapter()` (`sensegnat/ingestion/factory.py`). Only the fields relevant to the chosen `type` are read.
+
+```python
+class AdapterSettings(BaseModel):
+    type: str = "sample"   # sample | csv | zeek | suricata | gnat_telemetry | splunk
+```
+
+| `type` | Required fields | Optional fields |
+|---|---|---|
+| `sample` | — | — |
+| `csv` / `zeek` / `suricata` | `path` | — |
+| `gnat_telemetry` | — | `topic` (default `gnat.telemetry`), `brokers`, `group_id`, `max_messages` |
+| `splunk` | `spl_query`, `host` | `port` (default 8089), `token`, `username`, `password`, `earliest_time` (default `-24h`), `latest_time` (default `now`), `max_messages` |
+
+Unknown types and missing required fields raise `ValueError` at startup.
+
+```yaml
+adapter:
+  type: splunk
+  spl_query: "search index=network sourcetype=stream:tcp | fields _time, src, dest, dest_port, transport, bytes_in, bytes_out"
+  host: splunk.corp
+  token: "${SPLUNK_TOKEN}"
+```
 
 ---
 
